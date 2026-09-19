@@ -1,0 +1,50 @@
+
+(This code was developed based on Aleah's 02_emailed studies code.) 
+
+The aim for this code is to 1) generate a list of arrays (studies) that contain matrices of each study (studies have different number of populations and matrix dimensions).  and 2) to create a matrix that is latitude and longitude in columns, with rows being each unique study.
+
+
+## 0. load packages
+```{r}
+library(dplyr)
+library(readxl)
+library(abind)
+library(rio)
+
+```
+
+
+## 1. create study name vectors
+```{r}
+vector_studies <-list.files( path="F:/Sensitivity meta analysis/sen-across-space/Raw data") #list of studies, not including path, including ".xlsx"
+vector_studies_noxl<- gsub(".xlsx", "", vector_studies) # *********This is the character vector of study names for Allison*************
+vector_studies_WITHPATH <-list.files("F:/Sensitivity meta analysis/sen-across-space/Raw data", full.names = TRUE) #this vector is useful for reading in files with for() loop
+
+```
+
+## 2. load studies into a list
+```{r}
+study_list <- lapply(vector_studies_WITHPATH, import_list, col_names = FALSE)  ## use import_list to load all tabs at the same time. Loop over all studies and add them (each one being a list) to a large list
+names(study_list) <- vector_studies
+
+```
+
+## 3. create an array for each study
+```{r}
+study1 <- study_list[[1]]
+
+num_pop <- length(study1)-2
+mtx_dim <- dim(study1[[3]])[1]## number of population: number of tabs besides README and info
+array1 <- array(NA, dim = c(mtx_dim, mtx_dim, num_pop))
+
+for (i in 1:num_pop) {
+  j <- i+2
+  array1[, , i] <- as.matrix(study1[[j]])
+} 
+
+
+
+
+
+```
+
