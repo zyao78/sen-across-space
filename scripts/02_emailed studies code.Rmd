@@ -25,22 +25,98 @@ vector_studies_WITHPATH <-list.files("F:/Sensitivity meta analysis/sen-across-sp
 ## 2. load studies into a list
 ```{r}
 study_list <- lapply(vector_studies_WITHPATH, import_list, col_names = FALSE)  ## use import_list to load all tabs at the same time. Loop over all studies and add them (each one being a list) to a large list
+## col_names=False to keep the first row of the matrix
 names(study_list) <- vector_studies
 
 ```
 
-## 3. create an array for each study
+#### a. average across years
+
+Munzgergova et al., 2005 matrices are not in correct format, have to average them across years. m = (m1+m2+m3)/3
+
+
 ```{r}
-study1 <- study_list[[1]]
+names(study_list)
 
-num_pop <- length(study1)-2
-mtx_dim <- dim(study1[[3]])[1]## number of population: number of tabs besides README and info
-array1 <- array(NA, dim = c(mtx_dim, mtx_dim, num_pop))
+Munz_1 <- study_list[[10]]
 
-for (i in 1:num_pop) {
+Munz_1_A <- as.matrix(Munz_1[[3]])
+m1 <- as.matrix(Munz_1_A[3:5, 4:6])
+m2 <- as.matrix(Munz_1_A[8:10, 4:6])
+m3 <- as.matrix(Munz_1_A[13:15, 4:6])
+class(m1) <- class(m2)<- class(m3) <- "numeric"   ## need to convert these character matrices into numeric to perform element wise calculation
+Encovany <- (m1+m2+m3)/3
+
+Munz_1_B <- as.matrix(Munz_1[[4]])
+m1 <- as.matrix(Munz_1_B[3:5, 4:6])
+m2 <- as.matrix(Munz_1_B[8:10, 4:6])
+m3 <- as.matrix(Munz_1_B[13:15, 4:6])
+class(m1) <- class(m2)<- class(m3) <- "numeric"
+Malešov <- (m1+m2+m3)/3
+
+Munz_1_C <- as.matrix(Munz_1[[5]])
+m1 <- as.matrix(Munz_1_C[3:5, 4:6])
+m2 <- as.matrix(Munz_1_C[8:10, 4:6])
+m3 <- as.matrix(Munz_1_C[13:15, 4:6])
+class(m1) <- class(m2)<- class(m3) <- "numeric"
+Malíč <- (m1+m2+m3)/3
+
+
+```
+
+
+#### b. check for consistent matrix dimensions
+
+```{r}
+## check whether there're studies with variable matrix dimensions
+
+study_list_same_dim <- list()
+study_list_var_dim <- list()
+
+for (i in 1:length(study_list)) {
+  
+  study_i <- study_list[[i]]
+  dims_i <- sapply(study_i[3:length(study_i)], dim)
+  
+  if (length(unique(dims_i[1, ])) == 1) {
+    
+    study_list_same_dim[[length(study_list_same_dim) + 1]] <- study_i
+    names(study_list_same_dim)[length(study_list_same_dim)] <- names(study_list)[i]
+    
+  } else {
+       study_list_var_dim[[length(study_list_var_dim) + 1]] <- study_i
+       names(study_list_var_dim)[length(study_list_var_dim)] <- names(study_list)[i]
+  }
+}
+
+## looks like there's one study with variable matrices
+```
+
+
+
+
+
+## 3. create an array for each study (only if it contains mtx with a same dimension)
+```{r}
+study_list_mtx_array <-  vector("list", length = length(study_list_same_dim))
+
+for ( k in 1:length(study_list_same_dim)) {
+  study_k <- study_list_same_dim[[k]]
+  num_pop_k <- length(study_k)-2
+  mtx_dim_k <- dim(study_k[[3]])[1]## number of population: number of tabs besides README and info
+  array_k <- array(NA, dim = c(mtx_dim_k, mtx_dim_k, num_pop_k))
+  
+  for (i in 1:num_pop_k) {
   j <- i+2
-  array1[, , i] <- as.matrix(study1[[j]])
-} 
+  array_k[, , i] <- as.matrix(study_k[[j]])
+  } 
+  
+  study_list_mtx_array[[k]] <- array_k
+}
+
+
+
+
 
 
 
