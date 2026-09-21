@@ -10,6 +10,7 @@ library(dplyr)
 library(readxl)
 library(abind)
 library(rio)
+library(openxlsx)
 
 ```
 
@@ -34,7 +35,7 @@ names(study_list) <- vector_studies
 
 Munzgergova et al., 2005 matrices are not in correct format, have to average them across years. m = (m1+m2+m3)/3
 
-
+Start with the first paper
 ```{r}
 names(study_list)
 
@@ -61,14 +62,65 @@ m3 <- as.matrix(Munz_1_C[13:15, 4:6])
 class(m1) <- class(m2)<- class(m3) <- "numeric"
 Malíč <- (m1+m2+m3)/3
 
+### add the averaged matrices back to the Munz_1 list
+Munz_1[["Encovany"]] <- as.data.frame(Encovany)
+Munz_1[["Malešov"]] <- as.data.frame(Malešov)
+Munz_1[["Malíč"]] <- as.data.frame(Malíč)
 
+### delete the unprocessed list elements
+Munz_1 <- Munz_1[!names(Munz_1) %in% c("A", "B", "C")]
+
+```
+
+Then the second paper (same issue)
+```{r}
+
+Munz_2 <- study_list[[11]]
+
+Munz_2_A <- as.matrix(Munz_2[[3]])
+m1 <- as.matrix(Munz_2_A[3:5, 4:6])
+m2 <- as.matrix(Munz_2_A[8:10, 4:6])
+m3 <- as.matrix(Munz_2_A[13:15, 4:6])
+class(m1) <- class(m2)<- class(m3) <- "numeric"   ## need to convert these character matrices into numeric to perform element wise calculation
+Hovr <- (m1+m2+m3)/3
+
+Munz_2_B <- as.matrix(Munz_2[[4]])
+m1 <- as.matrix(Munz_2_B[3:5, 4:6])
+m2 <- as.matrix(Munz_2_B[8:10, 4:6])
+m3 <- as.matrix(Munz_2_B[13:15, 4:6])
+class(m1) <- class(m2)<- class(m3) <- "numeric"
+Loreta <- (m1+m2+m3)/3
+
+Munz_2_C <- as.matrix(Munz_2[[5]])
+m1 <- as.matrix(Munz_2_C[3:5, 4:6])
+m2 <- as.matrix(Munz_2_C[8:10, 4:6])
+m3 <- as.matrix(Munz_2_C[13:15, 4:6])
+class(m1) <- class(m2)<- class(m3) <- "numeric"
+Malíč <- (m1+m2+m3)/3
+
+### add the averaged matrices back to the Munz_2 list
+Munz_2[["Hovr"]] <- as.data.frame(Hovr)
+Munz_2[["Loreta"]] <- as.data.frame(Loreta)
+Munz_2[["Malíč"]] <- as.data.frame(Malíč)
+
+### delete the unprocessed list elements
+Munz_2 <- Munz_2[!names(Munz_2) %in% c("A", "B", "C")]
+```
+
+Add the updated list back to study_list
+```{r}
+
+study_list[["Munzgergova 2005 Cirsium acaule.xlsx"]] <- Munz_1  
+study_list[["Munzgergova 2005 Cirsium pannonicum.xlsx"]] <- Munz_2
 ```
 
 
 #### b. check for consistent matrix dimensions
 
+Check whether there're studies with variable matrix dimensions. For the following codes to run, each population tab should have the same dimension. 
+
 ```{r}
-## check whether there're studies with variable matrix dimensions
+
 
 study_list_same_dim <- list()
 study_list_var_dim <- list()
@@ -89,16 +141,14 @@ for (i in 1:length(study_list)) {
   }
 }
 
-## looks like there's one study with variable matrices
 ```
 
-
-
+Doak & Morris 2010 Polygonum viviparum.xlsx have populations of variable matrix dimensions. Need to consult with Allison on how to deal with it.
 
 
 ## 3. create an array for each study (only if it contains mtx with a same dimension)
 ```{r}
-study_list_mtx_array <-  vector("list", length = length(study_list_same_dim))
+mtx_array_study_list <-  vector("list", length = length(study_list_same_dim))
 
 for ( k in 1:length(study_list_same_dim)) {
   study_k <- study_list_same_dim[[k]]
@@ -111,16 +161,129 @@ for ( k in 1:length(study_list_same_dim)) {
   array_k[, , i] <- as.matrix(study_k[[j]])
   } 
   
-  study_list_mtx_array[[k]] <- array_k
+  mtx_array_study_list[[k]] <- array_k
 }
 
+names(mtx_array_study_list) <- names(study_list_same_dim)
 
-
-
-
-
-
-
+matrices_emailed_1 <- mtx_array_study_list
 
 ```
+
+## 4. create a location matrix
+
+extract all the info tabs
+
+```{r}
+info_list <- list()
+
+for (k in 1:length(study_list)) {
+  study_k <- study_list[[k]]
+  
+  info_k <- as.data.frame(study_list[[k]][names(study_list[[k]]) %in% c("info","Info", "INFO")])
+  
+  info_list[[k]] <- info_k
+}
+
+names(info_list) <- vector_studies_noxl
+
+```
+
+```{r}
+## run this before the loop, this function check for the first row of the location matrix
+start_row <- function(x) {  
+    any(grepl("population", x, ignore.case = TRUE)) &
+    any(grepl("\\blat",        x, ignore.case = TRUE)) & ## lat has to be in the beginning of a phrase (e.g. not in the word "population")
+    any(grepl("\\blong",       x, ignore.case = TRUE))}
+
+
+location_list <-list() 
+studies_withno_coord <- list()
+
+
+for (i in 1: length(info_list)) {
+  study_i <- info_list[[i]] 
+  
+  if (any(grepl("\\b(lat|long)", as.matrix(study_i), ignore.case = TRUE))) {header <- which(apply(study_i, 1, start_row))[1] ## extract the row num of the first row that satisfies the conditions
+  
+  study_i_2 <- study_i[header,]   ## extract col position for the three columns we need
+  pop_col <- which(grepl("population", study_i_2[1,], ignore.case = TRUE))[1]
+  lat_col <- which(grepl("\\blat", study_i_2[1,], ignore.case = TRUE))[1]
+  long_col <- which(grepl("\\blong", study_i_2[1,], ignore.case = TRUE))[1]
+  loc_mtx_untrimmed <- study_i[
+    (header+1):nrow(study_i),
+    c(pop_col, lat_col, long_col),
+    drop = FALSE]
+  names(loc_mtx_untrimmed) <- c("Population", "Lattitude", "Longitude")
+  
+  ## trim white space and add study name to pop names
+  if (any(is.na(loc_mtx_untrimmed$Population))) {
+  first_NA <- which(is.na(loc_mtx_untrimmed$Population))[1]
+  loc_mtx_i <- loc_mtx_untrimmed[-c(first_NA:nrow(loc_mtx_untrimmed)) ,]} else 
+  {loc_mtx_i<-loc_mtx_untrimmed}
+  
+  study_name <- vector_studies_noxl[i]
+  # loc_mtx_i$Population <- paste(loc_mtx_i$Population, study_name, sep = ", ")
+  
+  location_list [[study_name]] <- as.data.frame (loc_mtx_i)}  else {  ## export bad studies with no lat/long in Info
+    study_name_bad <- vector_studies_noxl[i]
+    studies_withno_coord[[study_name_bad]] <- study_i
+    
+}
+  }
+
+
+
+    
+```
+
+bind location_list into a single matrix. Clean up.
+
+```{r}
+locations_emailed <- bind_rows(location_list, .id = "study name")
+```
+
+Delete E, N. Keep only numbers.
+
+```{r}
+locations_emailed$Lattitude <- gsub('[N|S]', '', locations_emailed$Lattitude)
+locations_emailed$Longitude <- gsub('[E|W]', '', locations_emailed$Longitude)
+
+```
+
+Fix reversed Lat/long
+
+```{r}
+wrong_lat <- locations_emailed$Lattitude[which(locations_emailed$`study name` %in% c("Herzog et al. in review Sedum lanceolatum"))]
+wrong_long <- locations_emailed$Longitude[which(locations_emailed$`study name` %in% c("Herzog et al. in review Sedum lanceolatum"))]
+
+## swap the lat and long
+locations_emailed$Longitude[which(locations_emailed$`study name` %in% c("Herzog et al. in review Sedum lanceolatum"))] <- wrong_lat
+locations_emailed$Lattitude[which(locations_emailed$`study name` %in% c("Herzog et al. in review Sedum lanceolatum"))] <- wrong_long
+
+```
+
+
+
+## 5. export
+At the end this code should export 1. matrices_emailed, 2. location_emailed, and 3. studyID_emailed
+
+```{r}
+studyID_emailed <- vector_studies_noxl
+write.csv(studyID_emailed, "processed data/studyID_emailed.csv", row.names = FALSE)
+
+save(matrices_emailed_1, file = "processed data/matrices_emailed_1.RData")
+
+write.csv(locations_emailed, file = "processed data/locations_emailed.csv")
+
+```
+
+Export all three as one file for TODO list 1.
+
+```{r}
+save(matrices_emailed_1, locations_emailed, studyID_emailed, file = "processed data/TODO_list_01_output.RData" )
+```
+
+
+
 
