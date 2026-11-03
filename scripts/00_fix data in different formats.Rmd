@@ -1,0 +1,41 @@
+
+# Load packages
+```{r}
+library(readr)
+library(xfun)
+```
+
+
+
+Euler et al., 2014 sent raw data and codes in .txt. Need to construct matrices from raw data.
+
+# Euler et al., 2014
+```{r}
+##  
+file_paths <- list.files(path = "Raw data/data in different format/Euler et al 2014", 
+                         pattern = "12a\\.txt$", 
+                         full.names = TRUE) 
+readLines(file_paths[1], warn = FALSE)
+```
+
+
+
+## fix deprecated function
+as.real() in R has been deprecated, replace it with Re(). This code fix it in the original files.
+
+```{r}
+
+
+for (i in 1:length(file_paths)) {
+  script <- readLines(file_paths[i])
+  
+  if (any(grepl("as.real", script, fixed = TRUE))) {
+    xfun::gsub_files(file_paths[i], "as\\.real", "Re")} 
+  else {message("No as.real found in", file_paths[i])}
+}
+
+
+
+
+```
+

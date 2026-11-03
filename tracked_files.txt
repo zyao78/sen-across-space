@@ -1,0 +1,111 @@
+100644 blob 5b6a0652566d10360493952aec6d4a4febc77083      40	.gitignore
+100644 blob 10df5f412d7481e6762bc98c8b6a444650fee529 10094434974	Raw data/data in different format.zip
+100644 blob 5f2c3a6bdf9709e1d36749cdae4ae6c8e18ea167   10023	Raw data/data in different format/Euler et al 2014/Data to Allison.xlsx
+100644 blob 604dcd7d0a3618b231d6ebfba2bf2b62c661a5fb   35531	Raw data/data in different format/Euler et al 2014/denv.txt
+100644 blob 0cf3345582c826072b689a03630b05e5c67a2b44   11788	Raw data/data in different format/Euler et al 2014/denv_12a.txt
+100644 blob ae446406c9d7b63b1d41bf626e256c9e6b50eb4d   11848	Raw data/data in different format/Euler et al 2014/denv_12b.txt
+100644 blob 67969e15946ece6bb7b35690e8085d7ce7d7e498   29366	Raw data/data in different format/Euler et al 2014/drno.txt
+100644 blob 8f6f7f227cf3d9c313d5be02f9fe433172617b63   11858	Raw data/data in different format/Euler et al 2014/drno_12a.txt
+100644 blob ac2ac0e94469304bdb81ee56bf8d0abf14b5c55d   11918	Raw data/data in different format/Euler et al 2014/drno_12b.txt
+100644 blob 32cf991b8019cd72823a998b44afa0494b654299   16952	Raw data/data in different format/Euler et al 2014/drsv.txt
+100644 blob e8bee80d2c912e4a28419967b67b542e0c2cbbdb   11803	Raw data/data in different format/Euler et al 2014/drsv_12a.txt
+100644 blob 4bd12e09e1fe9208e7b7d9dc88844d07beaf6f4f   11863	Raw data/data in different format/Euler et al 2014/drsv_12b.txt
+100644 blob d23407aa9eece0466a37cebf06384b7382f77eb8   27647	Raw data/data in different format/Euler et al 2014/ek02.txt
+100644 blob e42da6e0ead2f4d566f1381f4ae7396ac7f5ed48   13500	Raw data/data in different format/Euler et al 2014/ek04.txt
+100644 blob 7202328017a66a015cdafd46317a156e8695e27f   32095	Raw data/data in different format/Euler et al 2014/ek09.txt
+100644 blob 7f6a646515ec7d23137fdbc58c545f93d1203a99   35484	Raw data/data in different format/Euler et al 2014/ek10.txt
+100644 blob 3f37b3d83d1e99ef3dd3e203e7d62d89ed0f7bd8   32870	Raw data/data in different format/Euler et al 2014/ek12.txt
+100644 blob b684802bb836ea3866f247e866095ded859e1022   11793	Raw data/data in different format/Euler et al 2014/eke10_12a.txt
+100644 blob 1d7563195a95e5a9536ab5c6950045d062e9f3a3   11853	Raw data/data in different format/Euler et al 2014/eke10_12b.txt
+100644 blob a4abb36f6171613113c5b48565e0638ec286d404   11809	Raw data/data in different format/Euler et al 2014/eke12_12a.txt
+100644 blob 4bdab160db65a5cf268a61af6df80dc3aa4c5545   11866	Raw data/data in different format/Euler et al 2014/eke12_12b.txt
+100644 blob b1fec4546492f240fa4abffb4b6381b4b6238e09   11808	Raw data/data in different format/Euler et al 2014/eke2_12a.txt
+100644 blob 286471f465c2f4b29578ac300a2c66a763e3ae16   11865	Raw data/data in different format/Euler et al 2014/eke2_12b.txt
+100644 blob 4b0fa597825d60d08423fc2a20226f34cab12434   11815	Raw data/data in different format/Euler et al 2014/eke4_12a.txt
+100644 blob 73de57bb3eeac307d9c6f5e1e05bd3d68d419740   11875	Raw data/data in different format/Euler et al 2014/eke4_12b.txt
+100644 blob 1e906801a978ba2e591012bf4c37a1b4f9e08a37   11811	Raw data/data in different format/Euler et al 2014/eke9_12a.txt
+100644 blob 64a5fc83392b7b875ee1702fb141c204fc2f32d3   11871	Raw data/data in different format/Euler et al 2014/eke9_12b.txt
+100644 blob d0a194691070a3ce6619be7a73db09e7869c9176   11790	Raw data/data in different format/Euler et al 2014/ekev1_12a.txt
+100644 blob 0e4341bcfd2e79d106f47b507bd55b2d0e7ee88b   11850	Raw data/data in different format/Euler et al 2014/ekev1_12b.txt
+100644 blob eeca51cd3bf15f209ce71c75c109a3745d81f490   11800	Raw data/data in different format/Euler et al 2014/ekev2_12a.txt
+100644 blob 26166bf417180a5a5124978104f20eeb9bdca4fe   11860	Raw data/data in different format/Euler et al 2014/ekev2_12b.txt
+100644 blob 5b627df61af22baa84d2983b518c257cae2bfe21   24123	Raw data/data in different format/Euler et al 2014/ekv1.txt
+100644 blob 6da36560f2ea00cc201cdd86411e6e14caa91302   38269	Raw data/data in different format/Euler et al 2014/ekv2.txt
+100644 blob 0c731e444af50430299565568d509ce7a7333eef  202874	Raw data/data in different format/Euler et al 2014/email chain re Euler et al 2014(1).pdf
+100644 blob 0c731e444af50430299565568d509ce7a7333eef  202874	Raw data/data in different format/Euler et al 2014/email chain re Euler et al 2014.pdf
+100644 blob 4644d7f7408066043813752eaa8339d5f9f5c203   11810	Raw data/data in different format/Euler et al 2014/fgr_12a.txt
+100644 blob 6fdecb75cb6a5b868b47db714c56c6251f67bd60   11870	Raw data/data in different format/Euler et al 2014/fgr_12b.txt
+100644 blob e37b1daec6e7f4d76ab93b44f2675aa3c3d65334   23203	Raw data/data in different format/Euler et al 2014/fgrp.txt
+100644 blob b673808d56b294017dd387ebbac09996818f5d7e  332388	Raw data/data in different format/Euler et al 2014/len2.txt
+100644 blob 33611e1798202e78128ffff8be38ef4ef9de425d   11802	Raw data/data in different format/Euler et al 2014/len2_12a.txt
+100644 blob 73f33c6c1969d426d73bbd715c0b96f72346a33c   11856	Raw data/data in different format/Euler et al 2014/len2_12b.txt
+100644 blob 4faf03b99a5bb133add3d36038819677b1234c2d   35583	Raw data/data in different format/Euler et al 2014/len4.txt
+100644 blob 8fbf39354aedd6157d864ffd83f4df61562dcc88   11820	Raw data/data in different format/Euler et al 2014/len4_12a.txt
+100644 blob add8970ed82495ef6c474557c47a63b0320a69da   11880	Raw data/data in different format/Euler et al 2014/len4_12b.txt
+100644 blob 955fd4740b85155996cc66ed76f7bd404aafea58   40766	Raw data/data in different format/Euler et al 2014/len5.txt
+100644 blob 14e719cc294bbaa2dc91f91359bfd04f857bec8c   11825	Raw data/data in different format/Euler et al 2014/len5_12a.txt
+100644 blob d020630a7ae6b00347a6d417070d8c24289bf403   11888	Raw data/data in different format/Euler et al 2014/len5_12b.txt
+100644 blob 2a26815f064e36c6df1abb2cd372d5c4c5f29bf6   45747	Raw data/data in different format/Euler et al 2014/len6.txt
+100644 blob fcf1e238b1267485dc1d3353e5684762aa66e8d1   11798	Raw data/data in different format/Euler et al 2014/len6_12a.txt
+100644 blob e63b641840792536667d79331681b13330766e90   11858	Raw data/data in different format/Euler et al 2014/len6_12b.txt
+100644 blob e31bb741f5103ef74a74af1305a3e6598bc01dfd    3466	Raw data/data in different format/Euler et al 2014/skar.txt
+100644 blob 2dda30221c0039dbd10ed8f9400a9c9ae34ef862   11804	Raw data/data in different format/Euler et al 2014/sks_12a.txt
+100644 blob d05ed273c211ef559537e9997991700436dcb9fe   11864	Raw data/data in different format/Euler et al 2014/sks_12b.txt
+100644 blob ddb24e0859daeaad0818e370df4b18be9effddc4   33837	Raw data/data in different format/Euler et al 2014/tora.txt
+100644 blob 00c7f8fda4117fee45ef8bfb96b6bac1f97009f2   11813	Raw data/data in different format/Euler et al 2014/tora_12a.txt
+100644 blob e7b03f840f75ba83a085399dcfb2878bee969028   11873	Raw data/data in different format/Euler et al 2014/tora_12b.txt
+100644 blob 179fe03ce6e861393659cbfd5ea3576730b47405   27676	Raw data/data in different format/Euler et al 2014/torb.txt
+100644 blob 5455688ef1cc55d761914af9f6173fc7f0d5b18e   11802	Raw data/data in different format/Euler et al 2014/torb_12a.txt
+100644 blob b53df50c7e96f53753b5a2be33e14e77cea011fc   11865	Raw data/data in different format/Euler et al 2014/torb_12b.txt
+100644 blob 93ba6211f8a80eb93f7a14835d373c91299c083a   26077	Raw data/data in different format/Euler et al 2014/tran.txt
+100644 blob 7d994203b79f5514848cdd7c98d3f772d04007e2   11807	Raw data/data in different format/Euler et al 2014/tran_12a.txt
+100644 blob 2fc1abeaa6278a95601c4b82dff476a65589ccb8   11867	Raw data/data in different format/Euler et al 2014/tran_12b.txt
+100644 blob 87e32c4ebf64bf90a4a31254c0c92eef8449f82b   22900	Raw data/data in different format/Euler et al 2014/trao.txt
+100644 blob 2970911988a5f1eab2a3f9f837e4b426b4ea6018   11804	Raw data/data in different format/Euler et al 2014/trao_12a.txt
+100644 blob d575b640099c5201cc29f7c40ade0e2cf1aad08f   11867	Raw data/data in different format/Euler et al 2014/trao_12b.txt
+100644 blob 777abe5aff947dbc506ff5d62d1a66a7e1f54326   35104	Raw data/data in different format/Euler et al 2014/tras.txt
+100644 blob 3991e3536b1f869c7bf74c79f94827ce9e30981c   11816	Raw data/data in different format/Euler et al 2014/tras_12a.txt
+100644 blob 75e196ed519fedc6df7ad09d584774415d18032d   11876	Raw data/data in different format/Euler et al 2014/tras_12b.txt
+100644 blob f01440c19986de72d6c83bdaa69e097d788b2e52   19378	Raw data/data in different format/Euler et al 2014/trav.txt
+100644 blob 986351bb73ee4f999830a4b2913ca5a32ac20aaf   11810	Raw data/data in different format/Euler et al 2014/trav_12a.txt
+100644 blob 5175ebc884f26ada47d16dced7778d6f8c65d065   11870	Raw data/data in different format/Euler et al 2014/trav_12b.txt
+100644 blob 5a2055f1fd4ff3b193bcf60c7987acd7c1b62d28   20685	Raw data/data in different format/Euler et al 2014/troc.txt
+100644 blob ec2f89e3bb430794cd98a8cdfecb70eb65c6523e   11810	Raw data/data in different format/Euler et al 2014/troc_12a.txt
+100644 blob 5ad29e95f3234125501d4d1b1b1e8f1726e66736   11870	Raw data/data in different format/Euler et al 2014/troc_12b.txt
+100644 blob ee836c4087b70025cebdda24037019a687c07721   22186	Raw data/data in different format/Euler et al 2014/vics.docx
+100644 blob 1119587389daa5ff003197bab944d8159b30f566   21840	Raw data/data in different format/Euler et al 2014/vics.txt
+100644 blob ccf31a9fc6df7cd1d60adeb4608212b346b34107   11799	Raw data/data in different format/Euler et al 2014/vics_12a.txt
+100644 blob 5b62ad185b87509b1971d7086c9c16414137144a   11859	Raw data/data in different format/Euler et al 2014/vics_12b.txt
+100644 blob 1876aa51c0cd4940dc073e19ae7a97c5211ad8b1  312914	Raw data/email studies/Andrello et al 2020 Arabis alpina.xlsx
+100644 blob dfac142d72826a0be3dc0355f0ceee8150b62ced  162123	Raw data/email studies/Doak & Morris 2010 Polygonum viviparum.xlsx
+100644 blob e33e562ee025d087003bec0fe1d3f432d3cce3dc  102904	Raw data/email studies/Doak & Morris 2010 Silene acaulis.xlsx
+100644 blob 5a1894bc01d620f462b746eb545c06f88736a687  165171	Raw data/email studies/Eckhart et al 2011 Clarkia xantiana.xlsx
+100644 blob 9e057e18e3642cdd0511fca1d8cb7ceb42753c9c  863689	Raw data/email studies/Herzog et al. in review Sedum lanceolatum.xlsx
+100644 blob ee0127352a3dbd89a9873f49467f6ecca2677c92 1338212	Raw data/email studies/Horvitz et al. 2018 Psidium cattleianum.xlsx
+100644 blob 4174882fe6690ab5184253301c64a145fb0a65e6  122354	Raw data/email studies/Kim and Donohue 2011 Erysimum capitatum.xlsx
+100644 blob 1061079db73498d1cecddb3bd5ac43cb7a5fe1f5  128012	Raw data/email studies/Knight et al 2009 Trillium grandiflorum.xlsx
+100644 blob 7ff8b464439d02f0d9cc8e3676ede691beb026fe  156719	Raw data/email studies/Munzgergova 2005 Cirsium acaule.xlsx
+100644 blob da88422c5259768a398fdde261e84a8b804231ba  146819	Raw data/email studies/Munzgergova 2005 Cirsium pannonicum.xlsx
+100644 blob 72b16005a9dd6fe0a9b347ee76f777cb42d38c59  109060	Raw data/email studies/Pascarella unpublished data Jacquemontia reclinata.xlsx
+100644 blob 73e20fe31f9161499a2a86a10a10f9e5da9a9cb2 1158022	Raw data/email studies/Ramula 2014 Lupinus polyphyllus.xlsx
+100644 blob 996aac02a820db6a581dd9682ff3d6a4e8908376 4770774	Raw data/email studies/Sheth & Angert 2018 Mimulus cardinalis.xlsx
+100644 blob c8b851d66d1a95cc15588a501be9a00b1494ba66  109171	Raw data/email studies/Tye et al. 2018 Dactylorhiza incarnata.xlsx
+100644 blob c50e5e8db3369f367828f225b32fda22985a86ee  109197	Raw data/email studies/Tye et al. 2018 Dactylorhiza lapponica.xlsx
+100644 blob b5d377a6136a1fc20769377860d2cadb521dc0dd  109238	Raw data/email studies/Tye et al. 2018 Dactylorhiza maculata.xlsx
+100644 blob 0349591a83bf8aa615ac93a63dad34e1a6c494b9  109234	Raw data/email studies/Tye et al. 2018 Gymnadenia conopsea.xlsx
+100644 blob df448df76a9098748ee1aee393c4911949f337e5   91204	Raw data/email studies/de Souza et al 2018 Euterpe edulis.xlsx
+100644 blob 9a79913c85dc092b2a9613701ca6cd1cf5b9d7f8 1579267	processed data/03_initial screening results.xlsx
+100644 blob 18a97ef4311113a2b992e5e275ac9a17b71376a1 4321028	processed data/TODO_list_01_output.RData
+100644 blob 4deaa6af8709043de1725bf172cbaa1249214b90   11891	processed data/locations_emailed.csv
+100644 blob 633500bb347ffdb0be23edde1d4bcccb6cfee08b 4317966	processed data/matrices_emailed_1.RData
+100644 blob 8b1ed91151630c24f1e8c438e37ad57628241fd3     722	processed data/studyID_emailed.csv
+100644 blob 4dc83a8cf80ab12ef5a83dc3742544eba02b924f   13882	processed data/unique_compadre_mp.csv
+100644 blob 5947940e30e2d36cce24dd003e2a4681d749b6b4     801	scripts/00_fix data in different formats.Rmd
+100644 blob 1892926119b0d52322e77873c48c59a966146892    7268	scripts/01_Compadre Input_Updated.R
+100644 blob b2140b2640bfcfed47a6a21fee7404ae88e869cd    7724	scripts/01_Compadre input.R
+100644 blob 5e0c8ead380ba8cf3a1469ab5cdfeac071cfa76f    7866	scripts/01_Compadre input.Rmd
+100644 blob 13a695fcedbdb2f731f51438868f130a43886b26    7211	scripts/02_emailed studies code.R
+100644 blob df1736240b8e6479d51c5bef14641d3d94e13815    9169	scripts/02_emailed studies code.Rmd
+100644 blob 0c6cc35379b210c925c2a6ca32b772f4a1a9008c    3321	scripts/Pascarella [YEAR_] Jacquemontia reclinata_cleaning.R
+100644 blob e542b54a4cba9f29d2f4856aecdfd41ce89692f1      77	scripts/test.R
+100644 blob 8e3c2ebc99e2e337f7d69948b93529a437590b27     205	sen-across-space.Rproj
