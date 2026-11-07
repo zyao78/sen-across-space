@@ -126,14 +126,14 @@ K<-array(0,dim=c(2+n.size,2+n.size))
 A<-K
 
 
-lam<-as.real(eigen(A)$values[1])
+lam<-Re(eigen(A)$values[1])
 
 ##get lambda,v,w
-lam<-as.real(eigen(A)$values[1])
+lam<-Re(eigen(A)$values[1])
 lambda<-lam
-w.eigen<-as.real(eigen(A)$vectors[,1])
+w.eigen<-Re(eigen(A)$vectors[,1])
 stable.dist<-w.eigen/sum(w.eigen)
-v.eigen<-as.real(eigen(t(A))$vectors[,1])
+v.eigen<-Re(eigen(t(A))$vectors[,1])
 repro.val<-v.eigen/v.eigen[1]
 
 
@@ -277,14 +277,14 @@ K<-array(0,dim=c(2+n.size,2+n.size))
 A<-K
 
 
-lam<-as.real(eigen(A)$values[1])
+lam<-Re(eigen(A)$values[1])
 
 ##get lambda,v,w
-lam<-as.real(eigen(A)$values[1])
+lam<-Re(eigen(A)$values[1])
 lambda<-lam
-w.eigen<-as.real(eigen(A)$vectors[,1])
+w.eigen<-Re(eigen(A)$vectors[,1])
 stable.dist<-w.eigen/sum(w.eigen)
-v.eigen<-as.real(eigen(t(A))$vectors[,1])
+v.eigen<-Re(eigen(t(A))$vectors[,1])
 repro.val<-v.eigen/v.eigen[1]
 
 
@@ -423,14 +423,14 @@ K<-array(0,dim=c(2+n.size,2+n.size))
 A<-K
 
 
-lam<-as.real(eigen(A)$values[1])
+lam<-Re(eigen(A)$values[1])
 
 ##get lambda,v,w
-lam<-as.real(eigen(A)$values[1])
+lam<-Re(eigen(A)$values[1])
 lambda<-lam
-w.eigen<-as.real(eigen(A)$vectors[,1])
+w.eigen<-Re(eigen(A)$vectors[,1])
 stable.dist<-w.eigen/sum(w.eigen)
-v.eigen<-as.real(eigen(t(A))$vectors[,1])
+v.eigen<-Re(eigen(t(A))$vectors[,1])
 repro.val<-v.eigen/v.eigen[1]
 
 

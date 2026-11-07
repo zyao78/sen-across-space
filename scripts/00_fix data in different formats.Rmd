@@ -1,10 +1,16 @@
 
-# Load packages
+# 0. Load packages
 ```{r}
 library(readr)
 library(xfun)
 library(writexl)
 library(tools)
+library(openxlsx)
+library(abind)
+library(rio)
+library(readxl)
+rm(list=ls(all=TRUE))
+
 ```
 
 
@@ -13,15 +19,15 @@ Euler et al., 2014 sent raw data and codes in .txt. Need to construct matrices f
 
 # 1. Euler et al., 2014
 
-
+It seems that code versions a vs b represent scenarios of seed predation vs no seed predation. We want to use the scenario with seed predation (version b) since this was the "realized" field measured conditions. 
 
 ## 1.1 fix deprecated function (only have to run this once, but it's good to do double-check(s))
-as.real() in R has been deprecated, replace it with Re(). This code fix it in the original files.
+as.real() in R has been deprecated, replace it with Re(). This code fixes it in the original files.
 
 ```{r}
 ##  
 file_paths <- list.files(path = "Raw data/data in different format/Euler et al 2014", 
-                         pattern = "12a\\.txt$", 
+                         pattern = "12b\\.txt$", 
                          full.names = TRUE) 
 
 for (i in 1:length(file_paths)) {
@@ -196,14 +202,10 @@ if (all.equal(K_1,K, check.attributes = FALSE)){ message ("matrices identifcal, 
 
 ```
 
-
-## 1.4 Average matrices across year
-
-m = (m1+m2+m3)/3
-
+## 1.4 Combined matrices into an excel
 ```{r}
 ### combine all matrices into an excel files with 72 tabs
-
+matrices_path <- "processed data/Euler et al., 2014 matrices"
 csv_files <- list.files(path = matrices_path, pattern = "\\.csv$", full.names = TRUE)
 matrix_names <- character()
 for (i in 1:72) {
@@ -215,30 +217,256 @@ matrix_names <- gsub("K_", "", matrix_names, fixed = TRUE)
 matrices_list <- lapply(csv_files, read.csv,row.names = 1)
 names(matrices_list) <- matrix_names
 
-writexl::write_xlsx(matrices_list, path = file.path("processed data/Euler et al., 2014_mtx_combined.xlsx"))
+### Final double check on correct number of matrices
+
+if (length(matrices_list)==72) { message ("Correct # of matrics")
+  } else { warning("Something went wrong")}
+
+# write.xlsx( matrices_list, file = "processed data/Euler et al., 2014_mtx_combined.xlsx",
+#             rowNames= F, colNames=F)
+
+writexl::write_xlsx(matrices_list, path = file.path("processed data/Euler et al., 2014_realized.xlsx"), col_names = FALSE)   ## Avoid making colnames
+```
 
 
+## 1.5 Add metadata sheet 
+This step was done manually in excel. Allison conducted the conversion from SWEREF to WGS84.
+#### 1.5.1 map of Euler et al., 2014 sites
+```{r}
+path <- "processed data/Euler et al., 2014_realized_averaged.xlsx"
+
+Euler_info <- read_excel(path, sheet = 2, col_names = FALSE)
+
+## define the function to find start row
+start_row <- function(x) {  
+    any(grepl("population", x, ignore.case = TRUE)) &
+    any(grepl("\\blat",        x, ignore.case = TRUE)) & ## lat has to be in the beginning of a phrase (e.g. not in the word "population")
+    any(grepl("\\blong",       x, ignore.case = TRUE))}
+
+## The following codes should return a df with pop, lat, and long
+  header <- which(apply(Euler_info, 1, start_row))[1] ## extract the row num of the first row that satisfies the conditions
+  
+  Euler_info_2 <- Euler_info[header,]   ## extract col position for the three columns we need
+  pop_col <- which(grepl("population", Euler_info_2[1,], ignore.case = TRUE))[1]
+  lat_col <- which(grepl("\\bLatitude", Euler_info_2[1,], ignore.case = TRUE))[2]
+  long_col <- which(grepl("\\bLongitude", Euler_info_2[1,], ignore.case = TRUE))[2]
+  Euler_coords <- Euler_info[
+    (header+1):nrow(Euler_info),
+    c(pop_col, lat_col, long_col),
+    drop = FALSE]
+  names(Euler_coords) <- c("Population", "Lattitude", "Longitude")
+  
+  
+  
+  
+## Make a map using the WGS84 coordinates
+library(leaflet)  
+library(sf)  
+library(ggplot2)  
+library(rnaturalearth)
+  
+Euler_coords$Lattitude <- as.numeric(gsub("[^0-9.-]", "", Euler_coords$Lattitude))
+
+Euler_coords$Longitude <- as.numeric(gsub("[^0-9.-]", "", Euler_coords$Longitude))
+
+### leaflet interactive map
+# leaflet(data = Euler_coords) %>%
+#   addTiles() %>%  # Adds standard OpenStreetMap background
+#   addMarkers(
+#     lng = ~Longitude, 
+#     lat = ~Lattitude, 
+#     popup = ~Population  # Shows city name when clicked
+#   )  
+
+
+## ggplot map
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+map_points <- st_as_sf(Euler_coords, coords = c("Longitude", "Lattitude"), crs = 4326)
+
+ggplot() +
+  geom_sf(data = , fill = "antiquewhite", color = "gray70") +
+  geom_sf(data = map_points, color = "red", size = 3) +
+  geom_sf_label(data = map_points, aes(label = Population), nudge_y = 5, size = 3) +
+  coord_sf(crs = 4326) + # Explicitly ensures the map is rendered in WGS84
+  theme_minimal() +
+  labs(title = "Euler et al., 2014, sites", x = "Longitude", y = "Latitude")
+
+```
+
+
+
+
+## 1.6 Average across years for each site
+```{r}
+rm(list=ls(all=TRUE))
+
+path <- "processed data/Euler et al., 2014_realized.xlsx"
+
+Euler <- path |> 
+  excel_sheets() |> 
+  set_names() |> 
+  map(~ read_excel(path, sheet = .x, col_names = FALSE))
 ```
 
 
 ```{r}
-rm(list=ls(all=TRUE))
 
-matrix_files <- list.files("processed data/Euler et al., 2014 matrices", full.names = TRUE)
+Euler_1 <- Euler
+Euler_names <- names(Euler_1)
+Euler_names <- Euler_names[-c(1,2)]
+Euler_names <- gsub(" (2008|2009|2010|08|09|10)$", "", Euler_names)
+names(Euler_1)[3:74] <- Euler_names
+Euler_1 <- Euler_1[-c(1,2)]
 
-matrix_names <- character()
-for (i in 1:72) {
-  name_i <- tools::file_path_sans_ext(basename(matrix_files[i]))
-  matrix_names[i] <- name_i
-}
-### obtain population names
-population_names <- unique(gsub("^K_|\\s+[0-9]{2,4}$", "", matrix_names))
+Euler_names_unique <- unique(Euler_names)  
 
-### make an empty list()
-Euler_list <- 
+Euler_mean <- list()
+
+ for (i in 1:24) {
+   
+   subset_i <- Euler_1[names(Euler_1) == Euler_names_unique[i]]
+   m1 <- as.matrix(subset_i[[1]])
+   m2 <- as.matrix(subset_i[[2]])
+   m3 <- as.matrix(subset_i[[3]])
+   class(m1) <- class(m2)<- class(m3) <- "numeric"
+   mean_i <- (m1+m2+m3)/3
+
+   Euler_mean[[i]] <- mean_i
+   
+ }
+names(Euler_mean) <- Euler_names_unique
+
+### Add the meta data tabs
+Euler_mean <- append(list(NULL, NULL), Euler_mean)
+names(Euler_mean)[1:2] <- c("README", "Info")
+Euler_mean[1:2] <- Euler[1:2]
+Euler_mean <- lapply(Euler_mean, as.data.frame)
+
+```
+
+If not been exported yet, export Euler_mean
+```{r}
+# writexl::write_xlsx(Euler_mean, path = file.path("processed data/Euler et al., 2014_realized_averaged.xlsx"), col_names = FALSE)   ## Avoid making colnames
+
 ```
 
 
+
+# 2. Quintana-Ascencio et al., 2018 
+
+## 2.0 codes from Dr Pedro Quintana-Ascencio
+This code might not work anymore. Some matrices_ data are broken and cannot be loaded.
+```{r}
+#We developed a mean IPM for each
+#patch and time???since???fire condition (92 ?? 57 = 5244 matrices), summarizing
+#the H. cumulicola life cycle for each combination of timesince???
+#fire with Florida rosemary patch???specific relative elevation,
+#area and aggregation
+# any questions please ask Pedro
+#
+#Quintana-Ascencio, P.F. Koontz, S., Smith, V., David, A., Sclater, V. L. & E. S Menges. 2018.
+#Predicting landscape-level distribution and abundance: Integrating demography, fire, 
+#elevation, and landscape habitat configuration. 
+#Journal of Ecology, 106: 2395-2408. DOI: org/10.1111/1365-2745.12985
+#
+#Quintana-Ascencio, P.F. Koontz, S.M., Ochocki, B., Sclater, V. L., L??pez-Borghesi, F., Li,
+#H. & E. S Menges. 2019.
+#Assessing the roles of seed bank, seed dispersal and historical disturbances for metapopulation 
+#persistence of a pyrogenic herb. Journal of Ecology, 107: 2760-2771.
+######################################################################
+
+# Bold data 
+
+site_info <- read.csv("F:/PhD/Sensitivity meta analysis/Quintana-Ascencio et al 2018/Balds_for_simulation_o1.csv", header=T) ####
+names(site_info)
+#"bald number"    "name"    " number of hc in 2016" "relative_elevation"
+# "bald area"    " bald isolation index (Hanski's)"   " number of fires"
+# XXXX, year of fire = 0 happen 1 not happen 
+
+# Metadata: 
+
+####################################################
+
+nb <- 92 # example 20 see bald names
+all.mat <- array(0, c(301,301,57,nb))
+#example site 20
+
+env <-"F:/PhD/Sensitivity meta analysis/Quintana-Ascencio et al 2018"
+
+for (si in 20){
+# all sites   
+#for (si in 1:nb) { 
+  matname <- paste("matrices_",si,".RData",sep="")
+  load(file.path(env, matname), verbose = TRUE) 
+  all.mat[,,,si] <- sim
+}
+
+matname <- paste("matrices_",20,".RData",sep="")
+
+
+
+dim(all.mat)
+
+# 301 301 cells is the dim IPM,
+# 1 scalar for seed bank, two  vectors for seed bank production and germination
+# 150 x 300 yearlings size matrix + yearling production
+# 150 x 300 adult size matrix + yearling production 
+# 57 sequence pf matrices for possible TSF 1:57, 
+# site 1:92
+```
+## 2.1 Check which .RData files are still uncorreputed
+
+```{r}
+rm(list=ls(all=TRUE))
+
+env <-"F:/PhD/Sensitivity meta analysis/Quintana-Ascencio et al 2018/Pedro's matrices"
+matrices <- list.files(env)
+
+Usable_data <- character()
+correupted_data <- character()
+
+### ue trycatch to separate good data from bads. 
+for (i in 1:length(matrices)){
+  
+  matname <- paste("matrices_",i,".RData",sep="")
+  tryCatch_result <- tryCatch({
+    temp_env <- new.env()
+    load(file.path(env, matname), verbose = TRUE, envir = temp_env)
+    TRUE
+  }, error = function(e) {
+    FALSE
+  })   
+  
+  
+  if (tryCatch_result=="TRUE") { 
+    Usable_data[i] <- matname} else {
+      correupted_data[i] <-matname
+    } 
+  
+ }
+
+## remove NA in character vectors
+Usable_data <- Usable_data[which(!is.na(Usable_data))]
+correupted_data<- correupted_data[which(!is.na(correupted_data))]
+## make sure there are no duplicated
+any(duplicated(Usable_data))
+any(duplicated(correupted_data))
+
+## export the usable_data vector
+# save( Usable_data,file="processed data/usable_mtx_from_Pedro.RData")
+
+### 
+site_info <- read.csv("F:/PhD/Sensitivity meta analysis/Quintana-Ascencio et al 2018/Balds_for_simulation_o1.csv", header=T) ####
+
+```
+
+
+## 2.2 Average across TSF scenarios
+
+```{r}
+
+```
 
 
 
