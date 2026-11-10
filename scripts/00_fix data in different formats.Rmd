@@ -9,6 +9,7 @@ library(openxlsx)
 library(abind)
 library(rio)
 library(readxl)
+library(dplyr)
 rm(list=ls(all=TRUE))
 
 ```
@@ -231,6 +232,7 @@ writexl::write_xlsx(matrices_list, path = file.path("processed data/Euler et al.
 
 ## 1.5 Add metadata sheet 
 This step was done manually in excel. Allison conducted the conversion from SWEREF to WGS84.
+
 #### 1.5.1 map of Euler et al., 2014 sites
 ```{r}
 path <- "processed data/Euler et al., 2014_realized_averaged.xlsx"
@@ -270,30 +272,19 @@ Euler_coords$Lattitude <- as.numeric(gsub("[^0-9.-]", "", Euler_coords$Lattitude
 Euler_coords$Longitude <- as.numeric(gsub("[^0-9.-]", "", Euler_coords$Longitude))
 
 ### leaflet interactive map
-# leaflet(data = Euler_coords) %>%
-#   addTiles() %>%  # Adds standard OpenStreetMap background
-#   addMarkers(
-#     lng = ~Longitude, 
-#     lat = ~Lattitude, 
-#     popup = ~Population  # Shows city name when clicked
-#   )  
+Euler_map <- leaflet(data = Euler_coords) %>%
+  addTiles() %>%  # Adds standard OpenStreetMap background
+  addMarkers(
+    lng = ~Longitude,
+    lat = ~Lattitude,
+    popup = ~Population  # Shows city name when clicked
+  ) %>%
+  addScaleBar()
 
-
-## ggplot map
-world <- ne_countries(scale = "medium", returnclass = "sf")
-
-map_points <- st_as_sf(Euler_coords, coords = c("Longitude", "Lattitude"), crs = 4326)
-
-ggplot() +
-  geom_sf(data = , fill = "antiquewhite", color = "gray70") +
-  geom_sf(data = map_points, color = "red", size = 3) +
-  geom_sf_label(data = map_points, aes(label = Population), nudge_y = 5, size = 3) +
-  coord_sf(crs = 4326) + # Explicitly ensures the map is rendered in WGS84
-  theme_minimal() +
-  labs(title = "Euler et al., 2014, sites", x = "Longitude", y = "Latitude")
+save(Euler_map, file = "processed data/map_Euler et al., 2014.RData")
 
 ```
-
+The Map is showing that the converted lat/longs are probably not accurate. But they are close enough.
 
 
 
@@ -388,25 +379,25 @@ names(site_info)
 
 ####################################################
 
-nb <- 92 # example 20 see bald names
-all.mat <- array(0, c(301,301,57,nb))
-#example site 20
-
-env <-"F:/PhD/Sensitivity meta analysis/Quintana-Ascencio et al 2018"
-
-for (si in 20){
-# all sites   
-#for (si in 1:nb) { 
-  matname <- paste("matrices_",si,".RData",sep="")
-  load(file.path(env, matname), verbose = TRUE) 
-  all.mat[,,,si] <- sim
-}
-
-matname <- paste("matrices_",20,".RData",sep="")
-
-
-
-dim(all.mat)
+# nb <- 92 # example 20 see bald names
+# all.mat <- array(0, c(301,301,57,nb))
+# #example site 20
+# 
+# env <-"F:/PhD/Sensitivity meta analysis/Quintana-Ascencio et al 2018"
+# 
+# for (si in 20){
+# # all sites   
+# #for (si in 1:nb) { 
+#   matname <- paste("matrices_",si,".RData",sep="")
+#   load(file.path(env, matname), verbose = TRUE) 
+#   all.mat[,,,si] <- sim
+# }
+# 
+# matname <- paste("matrices_",20,".RData",sep="")
+# 
+# 
+# 
+# dim(all.mat)
 
 # 301 301 cells is the dim IPM,
 # 1 scalar for seed bank, two  vectors for seed bank production and germination
@@ -453,23 +444,78 @@ correupted_data<- correupted_data[which(!is.na(correupted_data))]
 any(duplicated(Usable_data))
 any(duplicated(correupted_data))
 
-## export the usable_data vector
-# save( Usable_data,file="processed data/usable_mtx_from_Pedro.RData")
+## Copy the usable matrices to a separate folder 
+all_mtxs <- list.files(env,full.names = TRUE)
 
-### 
-site_info <- read.csv("F:/PhD/Sensitivity meta analysis/Quintana-Ascencio et al 2018/Balds_for_simulation_o1.csv", header=T) ####
+usable_mtxs <- all_mtxs[basename(all_mtxs) %in% Usable_data]
+
+file.copy(from=usable_mtxs, to="F:/PhD/Sensitivity meta analysis/Quintana-Ascencio et al 2018/Pedro's matrices usable")
+
+
 
 ```
 
 
-## 2.2 Average across TSF scenarios
+## 2.2 Take matrices of TSF=1
+
+Instead of trying to average the periodic matrices, we're taking the matrix representing TSF=1 for each site.
 
 ```{r}
+rm(list=ls(all=TRUE))
+load("processed data/usable_mtx_from_Pedro.RData")
+mtx_path <- "F:/PhD/Sensitivity meta analysis/Quintana-Ascencio et al 2018/Pedro's matrices usable"
+files <- list.files(mtx_path)
+
+## create empty array to store matrices
+Pedro_list <-list()
+
+## Take the first slice of each array
+
+for (i in 1:length(files)) {
+  temp_env <- new.env()
+  load(file.path(mtx_path, files[i]), verbose = TRUE, envir = temp_env)
+  TSF_1 <- temp_env$sim[, , 1]
+  Pedro_list[[i]] <-TSF_1 
+  names(Pedro_list)[i] <- basename(files[i])
+}
 
 ```
 
+## 2.3 Match list element name with real population names
+
+```{r}
+site_info <- read.csv("F:/PhD/Sensitivity meta analysis/Quintana-Ascencio et al 2018/Balds_for_simulation_o1.csv", header=T) ####
+names(site_info)
 
 
+site_info$bald_name <- paste0(site_info$bald,"_" ,site_info$name)
+
+site_info$row_name <- rownames(site_info)
+
+Pedro_site_name <- site_info %>%
+  select(row_name, bald_name)
+
+## 
+old_list_name <- names(Pedro_list)
+old_list_name_1 <- gsub("matrices_|.RData","",old_list_name)
+new_list_name <- character(56)
+
+for (i in 1:length(old_list_name_1)) {
+  index <- old_list_name_1[i]
+  # index_numeric <- as.numeric(old_list_name_1[i])
+  bald_name <- Pedro_site_name$bald_name[which(Pedro_site_name$row_name == index)]
+  new_list_name[i] <- bald_name
+}
+
+names(Pedro_list) <- new_list_name 
+Pedro_list <- lapply(Pedro_list, as.data.frame)
+
+## export as xlsx to add meta data
+writexl::write_xlsx(Pedro_list, path = file.path("processed data/Pedro's list.xlsx"), col_names = FALSE)
+
+```
+
+## 2.4 Add coordinates (waiting for raw data)
 
 
 
