@@ -1,12 +1,19 @@
 
 ## 0. load packages
 ```{r}
+rm(list = ls())
+
 library(Rcompadre)
 library(dplyr)
 ```
+#### 0.1 Warnings
+```{r}
+warning("discard knight 2003, because you have knight 2009 from the email campaign with more data")
+warning("discard Menges et al. 2004, because populations differ in fire frequency? should check this paper")
+```
 
 
-## 1. Sarah, Thomas, and Allison's codes 
+## 1. Export a summary .csv file showing all available studies
 
 ```{r}
 ##########################################################################################
@@ -15,45 +22,55 @@ library(dplyr)
 
 compadre <- cdb_fetch("compadre") ## fetch the Compadre database from compadre-db.org
 compadre_mp <- compadre[which(compadre$NumberPopulations>1),]  ## filter for multi-population studies
+compadre_mp <- compadre[complete.cases(compadre@data[, c("Lat", "Lon")]) & 
+                            compadre@data$MatrixComposite %in% "Individual" & ## Exclude the pooled matrices
+                            compadre@data$MatrixTreatment %in% "Unmanipulated" & 
+                            compadre@data$NumberPopulations > 1 & 
+                            compadre@data$OrganismType != "Algae", ]
+## Filter results to keep one example from each unique publication
+unique_compadre_mp <- compadre_mp[
+    which(!duplicated(paste(compadre_mp$Authors, compadre_mp$Journal,compadre_mp$YearPublication)))]
 
-warning("discard knight 2003, because you have knight 2009 from the email campaign with more data")
-warning("discard Menges et al. 2004, because populations differ in fire frequency? should check this paper")
-str(compadre_mp)
+unique_compadre_mp_df <- as.data.frame(unique_compadre_mp)
+subset_df <- unique_compadre_mp_df[, c("Authors", "Journal", "YearPublication", "DOI_ISBN")]
 
-for (i in 1:dim(compadre_mp)[1]){
-  compadre_mp[i,]@data$mat[[1]]@matA
+## Export
+write.csv(subset_df, file = "processed data/unique_compadre_mp.csv", row.names = FALSE)
+
+
+####################################### Deprecated ###################
+# for (i in 1:dim(compadre_mp)[1]){
+#   compadre_mp[i,]@data$mat[[1]]@matA
   
   
   # here is Thomas' code
   
-  # Filter compadre data to keep matrices that have >1 population, have a latitude and longitude coordinate, "Individual" in the "MatrixComposite" column, "Unmanipulated" in the "MatrixTreatment" column, and no "Algae" in the "OrganismType" column
-  compadre_mp <- compadre[complete.cases(compadre@data[, c("Lat", "Lon")]) & 
-                            compadre@data$MatrixComposite %in% "Individual" & 
-                            compadre@data$MatrixTreatment %in% "Unmanipulated" & 
-                            compadre@data$NumberPopulations > 1 & 
-                            compadre@data$OrganismType != "Algae", ]
+  # # Filter compadre data to keep matrices that have >1 population, have a latitude and longitude coordinate, "Individual" in the "MatrixComposite" column, "Unmanipulated" in the "MatrixTreatment" column, and no "Algae" in the "OrganismType" column
+  # compadre_mp <- compadre[complete.cases(compadre@data[, c("Lat", "Lon")]) & 
+  #                           compadre@data$MatrixComposite %in% "Individual" & 
+  #                           compadre@data$MatrixTreatment %in% "Unmanipulated" & 
+  #                           compadre@data$NumberPopulations > 1 & 
+  #                           compadre@data$OrganismType != "Algae", ]
   
   # filter results to keep one example from each unique publication 
-  unique_compadre_mp <- compadre_mp[
-    which(!duplicated(paste(compadre_mp$Authors, compadre_mp$Journal,compadre_mp$YearPublication)))]
-  
-  #view results
-  unique_compadre_mp
-  
-  # transform data into a visible data frame 
-  unique_compadre_mp_df <- as.data.frame(unique_compadre_mp)
-  
+  # unique_compadre_mp <- compadre_mp[
+  #   which(!duplicated(paste(compadre_mp$Authors, compadre_mp$Journal,compadre_mp$YearPublication)))]
+  # 
+  # #view results
+  # unique_compadre_mp
+  # 
+  # # transform data into a visible data frame 
+  # unique_compadre_mp_df <- as.data.frame(unique_compadre_mp)
+  # 
   # Subset the data frame to include only the desired columns
-  subset_df <- unique_compadre_mp_df[, c("Authors", "Journal", "YearPublication", "DOI_ISBN")]
+  # subset_df <- unique_compadre_mp_df[, c("Authors", "Journal", "YearPublication", "DOI_ISBN")]
   
   # Export the subsetted data frame as a CSV file
-  # write.csv(subset_df, file = "processed data/unique_compadre_mp.csv", row.names = FALSE)
-}
-
-write.csv(subset_df, file = "processed data/unique_compadre_mp.csv", row.names = FALSE)
+#   # write.csv(subset_df, file = "processed data/unique_compadre_mp.csv", row.names = FALSE)
+# }
 ```
 
-
+#### 1.1 Sarah's code (deprecated?)
 ```{r}
 ##########################################################################################
 #################################### Sarah's Code ########################################
@@ -65,10 +82,12 @@ stages <-  matrixClass(unique_compadre_mp)
 stages[[1]]$MatrixClassAuthor # one of the mats
 # length of matrix for each study
 lengths <- unique_compadre_mp$MatrixDimension # number of dimensions for each matrix
+
 # make summary table
 dims_mat <- matrix(data = NA, nrow = nrow(unique_compadre_mp_df), ncol = max(as.numeric(lengths))+3, 
                    dimnames = list(c(1:nrow(unique_compadre_mp_df)), 
                                    c(paste0("sizeclass", 1:max(as.numeric(lengths))), "num_pops_in_study", "num_dims", "species")))
+
 
 for (i in 1:nrow(unique_compadre_mp_df)) {
   dims_mat[i,1:length(stages[[i]]$MatrixClassAuthor)] <- stages[[i]]$MatrixClassAuthor # add dimension names to matrix
@@ -124,17 +143,181 @@ overlap <- intersect(screening_res[screening_res$`matrices included in database 
 if (length(overlap) > 0) { warning("Be careful, there are matrices in compadre that are also in our database. Need to remove one to prevent duplicates")}
 
 
+```
+
+
+
+## 2. Make array
+#### 2.1.1 Make matrix array
+```{r}
+## Check NAs
+# any(is.na(unique_compadre_mp_df$YearPublication))
+# any(is.na(unique_compadre_mp_df$Journal))    ## NA under journal
+# any(is.na(unique_compadre_mp_df$Authors))
+
+matrices_compadre <- list()
+
+for (i in 1:nrow(unique_compadre_mp_df)) {
+ 
+  Authors <- unique_compadre_mp_df$Authors[i]
+  Journal <- ifelse(is.na(unique_compadre_mp_df$Journal[i]),unique_compadre_mp_df$SourceType[i], unique_compadre_mp_df$Journal[i])   ### Make sure to include other source types that did not have a Journal source.
+  YearPub <- unique_compadre_mp_df$YearPublication[i]
+  if (any(is.na(c(Authors, Journal, YearPub)))){stop("Issues with study names:", i)}
+  
+  Matrices_index <- if (Journal %in% c("Thesis","Book Chapter","Report")){which(compadre_mp$Authors==Authors & compadre_mp$YearPublication==YearPub)
+    } else {which(compadre_mp$Authors==Authors & compadre_mp$Journal==Journal & compadre_mp$YearPublication==YearPub)}  
+    
+  Matrix_list_i <- list()
+  
+  for (ii in 1:length(Matrices_index)) {
+    idx <- Matrices_index[ii]
+    Pop_names <- compadre_mp@data$MatrixPopulation[idx]
+    Pop_syear <- compadre_mp@data$MatrixStartYear[idx]
+    Pop_eyear <- compadre_mp@data$MatrixEndYear[idx]
+    List_name <- paste0(Pop_names,"_",Pop_syear,"-",Pop_eyear)
+    
+    Matrix_list_i[[ii]] <- compadre_mp@data$mat[[idx]]@matA
+    names(Matrix_list_i)[[ii]] <- List_name}
+  
+  
+  ## Study name
+  Authors_split <- strsplit(Authors, "; ")[[1]]
+  Authors_i <- if (length(Authors_split) > 2) {
+  paste0(Authors_split[1], " et al.")} else if (length(Authors_split) == 2) {
+  paste(Authors_split[1], "&", Authors_split[2])
+    } else {Authors}
+  Author_year_i <- paste0(Authors_i, ", ", YearPub)
+  
+  matrices_compadre[[i]] <- Matrix_list_i
+  names(matrices_compadre)[i] <- Author_year_i
+}
+
+
+
+```
+
+###### 2.1.2 Average across years
+```{r}
+
+```
+
+
+#### 2.2.1 Extra info for each matrix
+```{r}
+## 
+# Info_cols <- colnames(unique_compadre_mp_df)
+Info_cols <- c("List name", "MatrixID", "SpeciesAuthor", "Population", "Latitude", "Longitude","Observations" )
+
+## Create a list of study info
+Info_list <- list()
+for (i in 1:nrow(unique_compadre_mp_df)) {
+ 
+  Authors <- unique_compadre_mp_df$Authors[i]
+  Journal <- ifelse(is.na(unique_compadre_mp_df$Journal[i]),unique_compadre_mp_df$SourceType[i], unique_compadre_mp_df$Journal[i])   ### Make sure to include other source types that did not have a Journal source.
+  YearPub <- unique_compadre_mp_df$YearPublication[i]
+  if (any(is.na(c(Authors, Journal, YearPub)))){stop("Issues with study names:", i)}
+  
+  Matrices_index <- if (Journal %in% c("Thesis","Book Chapter","Report")){which(compadre_mp$Authors==Authors & compadre_mp$YearPublication==YearPub)
+  } else {which(compadre_mp$Authors==Authors & compadre_mp$Journal==Journal & compadre_mp$YearPublication==YearPub)}  
+  
+    #######################################################################
+  
+  
+  Info_df_i <- data.frame(matrix(ncol = length(Info_cols), nrow = 0, dimnames = list(NULL, Info_cols)))
+  
+  for (ii in 1:length(Matrices_index)) {
+    idx <- Matrices_index[ii]
+    
+    MID_ii <- compadre_mp@data$MatrixID[idx]
+    Species_ii <- compadre_mp@data$SpeciesAuthor[idx]
+    Pop_ii <- compadre_mp@data$MatrixPopulation[idx]
+    Lat_ii <- compadre_mp@data$Lat[idx]
+    Lon_ii <- compadre_mp@data$Lon[idx]
+    Observations_ii <- compadre_mp@data$Observations[idx]
+    Pop_names <- compadre_mp@data$MatrixPopulation[idx]
+    Pop_syear <- compadre_mp@data$MatrixStartYear[idx]
+    Pop_eyear <- compadre_mp@data$MatrixEndYear[idx]
+    List_name <- paste0(Pop_names,"_",Pop_syear,"-",Pop_eyear)    
+    values_ii <- c(List_name,MID_ii,Species_ii,Pop_ii,Lat_ii,Lon_ii,Observations_ii)
+    Info_df_i[ii,] <- values_ii
+  }
+  
+  Authors_split <- strsplit(Authors, "; ")[[1]]
+  Authors_i <- if (length(Authors_split) > 2) {
+  paste0(Authors_split[1], " et al.")} else if (length(Authors_split) == 2) {
+  paste(Authors_split[1], "&", Authors_split[2])
+    } else {Authors}
+  Author_year_i <- paste0(Authors_i, ", ", YearPub)
+  
+  Info_list[[i]] <- Info_df_i
+  names(Info_list)[i] <- Author_year_i
+  
+  }
+
+```
+
+###### 2.2.2 Visual checks of coords
+```{r}
+### Filter for studies that have populations sharing the same coordinates
+
+single_location <- character()
+
+for (i in 1:length(Info_list)) {
+
+  Lat_unique <- unique(Info_list[[i]]$Latitude)
+  Lon_unique <- unique(Info_list[[i]]$Longitude)
+
+  if (length(unique(Info_list[[i]]$SpeciesAuthor)) == 1) {
+    if (length(Lat_unique) == 1 & length(Lon_unique) == 1) {
+      single_location <- c(single_location, names(Info_list)[i])
+    }
+  }
+
+  if (length(unique(Info_list[[i]]$SpeciesAuthor)) > 1) {
+    if (length(Lat_unique) <= length(unique(Info_list[[i]]$SpeciesAuthor)) &
+        length(Lon_unique) <= length(unique(Info_list[[i]]$SpeciesAuthor))) {
+      single_location <- c(single_location, names(Info_list)[i])
+    }
+  }
+}
+
+```
+Many studies contained no spatial replications: 1) one species, populations share the same coordinates, or 2) multiple species, each species containing populations that share the same coordinates, namely, num(species)>=num(spatially distinct populations).
+
+
+
+
+#### 2.3 Thomas' codes (Deprecated?)
+```{r}
+## Check initial screening result
+# screening_res <- readxl::read_xlsx("processed data/03_initial screening results.xlsx")
+# names(screening_res)
+# screening_res_noNA <- screening_res[which(!is.na(screening_res$`Study (PDF Title)`)),]
+# 
+# screening_res_noNA <- screening_res_noNA %>%
+#   filter(`matrices included in database and in correct format (Y/N)`=="Y")
+
+
+
+
 
 ######## Thomas' code to create arrays 
 
-# Create arrays for each population and organize them into a list
-matrices_compadre <- list()
+# Create arrays for each population and organize them into a 
+
+
+
+
+
+
+
+
 for (i in 1:nrow(unique_compadre_mp_df)) {
   # Check if there is an A Matrix provided
-  if (!is.null(unique_compadre_mp_df$AMatrix[i])) {
-    # If A Matrix exists, use it
-    matrices_compadre[[i]] <- unique_compadre_mp_df$AMatrix[i]
-  } else {
+  # if (!is.null(unique_compadre_mp_df$AMatrix[i])) {
+  #   # If A Matrix exists, use it
+  #   matrices_compadre[[i]] <- unique_compadre_mp_df$AMatrix[i]
+  # } else {
     # If A Matrix does not exist, create an array with averaged element-wise over years
     matrix_list <- unique_compadre_mp_df$mat[[i]]@matA
     # Calculate the number of years for averaging
@@ -143,7 +326,7 @@ for (i in 1:nrow(unique_compadre_mp_df)) {
     averaged_matrix <- apply(matrix_list, c(1, 2), function(x) mean(x))
     matrices_compadre[[i]] <- array(averaged_matrix, dim = c(dim(matrix_list)[1], dim(matrix_list)[2], 1))
   }
-}
+# }
 
 # Create a matrix with latitude and longitude in columns and unique studies in rows
 # The order of studies should match the order in the list 'locations_compadre'
@@ -165,3 +348,6 @@ print(studyID_compadre)
 
 ```
 
+## 3. Check for duplicates
+
+## 4. Check for NAs in matrices
