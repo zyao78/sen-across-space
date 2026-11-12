@@ -10,6 +10,7 @@ library(abind)
 library(rio)
 library(readxl)
 library(dplyr)
+library(purrr)
 rm(list=ls(all=TRUE))
 
 ```
@@ -109,8 +110,9 @@ if (length(list.files(output_dir)) == 72) { message ("All 24 code files were suc
 ```{r}
 ### first, add additional codes to each file 
 Modified_file_paths <- list.files(
-  path = "processed data/Euler et al., 2014_modified", full.names = TRUE) 
-unlink(list.files("processed data/Euler et al., 2014 matrices", full.names = TRUE), recursive = TRUE) ## empty the output dir first before entering the loop
+  path = "processed data/00_fix data in different formats/Johan's study/Modified_codes", full.names = TRUE)
+output_dir <- "processed data/00_fix data in different formats/Johan's study/Matrices"
+unlink(list.files("processed data/00_fix data in different formats/Johan's study/Matrices", full.names = TRUE), recursive = TRUE) ## empty the output dir first before entering the loop
 
 
 
@@ -118,7 +120,7 @@ Addition <- c(
   'header <- readLines(file, n = 1)',
   'sub(".*#", "", header)',
   'matrix_name <- paste0("K", "_", sub(".*#", "", header))',
-  'output_dir <- "processed data/Euler et al., 2014 matrices"',
+  'output_dir <- "processed data/00_fix data in different formats/Johan\'s study/Matrices"',
   'write.csv(K, file.path(output_dir, paste0(matrix_name, ".csv")))'
 )
 
@@ -142,18 +144,19 @@ for (file in Modified_file_paths) {
 
 ### Then run every single code in Modified_file_paths
 Modified_file_paths <- list.files(
-  path = "processed data/Euler et al., 2014_modified", full.names = TRUE) 
-
+  path = "processed data/00_fix data in different formats/Johan's study/Modified_codes", full.names = TRUE) 
+output_dir <- list.files(
+  path = "processed data/00_fix data in different formats/Johan's study/Matrices", full.names = TRUE) 
 
 for (file in Modified_file_paths) {
-  Modified_file_paths <- list.files(
-  path = "processed data/Euler et al., 2014_modified", full.names = TRUE) 
+  Modified_file_paths <- list.files(path = "processed data/00_fix data in different formats/Johan's study/Modified_codes", full.names = TRUE) 
   source(file)
 }
 
 ### check whether all matrices have been exported n=72
+
 if (length(list.files(output_dir)) == 72) { message ("All matrices exported") 
-  } else { warning("something went wrong")}
+  } else { stop ("something went wrong")}
 
 ### only 71 matrices, upon eyeballing, ekev2 2010 was wrongly named ekev1 2010. I went back to the raw data and fixed it manually. Then, I re-run all codes above. 
 
@@ -206,9 +209,10 @@ if (all.equal(K_1,K, check.attributes = FALSE)){ message ("matrices identifcal, 
 ## 1.4 Combined matrices into an excel
 ```{r}
 ### combine all matrices into an excel files with 72 tabs
-matrices_path <- "processed data/Euler et al., 2014 matrices"
+matrices_path <- "processed data/00_fix data in different formats/Johan's study/Matrices"
 csv_files <- list.files(path = matrices_path, pattern = "\\.csv$", full.names = TRUE)
 matrix_names <- character()
+
 for (i in 1:72) {
   name_i <- tools::file_path_sans_ext(basename(csv_files[i]))
   matrix_names[i] <- name_i
@@ -221,12 +225,12 @@ names(matrices_list) <- matrix_names
 ### Final double check on correct number of matrices
 
 if (length(matrices_list)==72) { message ("Correct # of matrics")
-  } else { warning("Something went wrong")}
+  } else { Stop("Something went wrong")}
 
 # write.xlsx( matrices_list, file = "processed data/Euler et al., 2014_mtx_combined.xlsx",
 #             rowNames= F, colNames=F)
 
-writexl::write_xlsx(matrices_list, path = file.path("processed data/Euler et al., 2014_realized.xlsx"), col_names = FALSE)   ## Avoid making colnames
+writexl::write_xlsx(matrices_list, path = file.path("processed data/00_fix data in different formats/Johan's study/Johan's matrices unaveraged.xlsx"), col_names = FALSE)   ## Avoid making colnames
 ```
 
 
@@ -292,7 +296,7 @@ The Map is showing that the converted lat/longs are probably not accurate. But t
 ```{r}
 rm(list=ls(all=TRUE))
 
-path <- "processed data/Euler et al., 2014_realized.xlsx"
+path <- "processed data/00_fix data in different formats/Johan's study/Johan's matrices unaveraged.xlsx"
 
 Euler <- path |> 
   excel_sheets() |> 
@@ -314,6 +318,7 @@ Euler_names_unique <- unique(Euler_names)
 
 Euler_mean <- list()
 
+### Element-wise averaging
  for (i in 1:24) {
    
    subset_i <- Euler_1[names(Euler_1) == Euler_names_unique[i]]
@@ -338,7 +343,7 @@ Euler_mean <- lapply(Euler_mean, as.data.frame)
 
 If not been exported yet, export Euler_mean
 ```{r}
-# writexl::write_xlsx(Euler_mean, path = file.path("processed data/Euler et al., 2014_realized_averaged.xlsx"), col_names = FALSE)   ## Avoid making colnames
+writexl::write_xlsx(Euler_mean, path = file.path("processed data/00_fix data in different formats/Euler et al., 2020 Primula farinosa.xlsx"), col_names = FALSE)   ## Avoid making colnames
 
 ```
 
@@ -346,7 +351,7 @@ If not been exported yet, export Euler_mean
 
 # 2. Quintana-Ascencio et al., 2018 
 
-## 2.0 codes from Dr Pedro Quintana-Ascencio
+## 2.0 codes from Dr Pedro Quintana-Ascencio (deprecated)
 This code might not work anymore. Some matrices_ data are broken and cannot be loaded.
 ```{r}
 #We developed a mean IPM for each
@@ -407,10 +412,19 @@ names(site_info)
 # site 1:92
 ```
 ## 2.1 Check which .RData files are still uncorreputed
-
+Pedro's raw data is large. The following codes will work once the raw data is downloaded into a local dir. 
 ```{r}
 rm(list=ls(all=TRUE))
+stop("Update data directory")
+###################
+env <-"F:/PhD/Sensitivity meta analysis/Quintana-Ascencio et al 2018/Pedro's matrices" 
+site_info <- read.csv("F:/PhD/Sensitivity meta analysis/Quintana-Ascencio et al 2018/Balds_for_simulation_o1.csv", header=T) ####
 
+################### ########################################################
+```
+
+
+```{r}
 env <-"F:/PhD/Sensitivity meta analysis/Quintana-Ascencio et al 2018/Pedro's matrices"
 matrices <- list.files(env)
 
@@ -449,8 +463,14 @@ all_mtxs <- list.files(env,full.names = TRUE)
 
 usable_mtxs <- all_mtxs[basename(all_mtxs) %in% Usable_data]
 
-file.copy(from=usable_mtxs, to="F:/PhD/Sensitivity meta analysis/Quintana-Ascencio et al 2018/Pedro's matrices usable")
 
+dir.create(file.path(env, "Pedro's matrices usable"), recursive = TRUE)
+
+
+file.copy(
+  from = usable_mtxs,
+  to = file.path(env, "Pedro's matrices usable")
+)
 
 
 ```
@@ -461,11 +481,9 @@ file.copy(from=usable_mtxs, to="F:/PhD/Sensitivity meta analysis/Quintana-Ascenc
 Instead of trying to average the periodic matrices, we're taking the matrix representing TSF=1 for each site.
 
 ```{r}
-rm(list=ls(all=TRUE))
-load("processed data/usable_mtx_from_Pedro.RData")
-mtx_path <- "F:/PhD/Sensitivity meta analysis/Quintana-Ascencio et al 2018/Pedro's matrices usable"
-files <- list.files(mtx_path)
 
+env_usable <- file.path(env, "Pedro's matrices usable")
+files <- list.files(env_usable)
 ## create empty array to store matrices
 Pedro_list <-list()
 
@@ -473,7 +491,7 @@ Pedro_list <-list()
 
 for (i in 1:length(files)) {
   temp_env <- new.env()
-  load(file.path(mtx_path, files[i]), verbose = TRUE, envir = temp_env)
+  load(file.path(env_usable, files[i]), verbose = TRUE, envir = temp_env)
   TSF_1 <- temp_env$sim[, , 1]
   Pedro_list[[i]] <-TSF_1 
   names(Pedro_list)[i] <- basename(files[i])
@@ -484,7 +502,7 @@ for (i in 1:length(files)) {
 ## 2.3 Match list element name with real population names
 
 ```{r}
-site_info <- read.csv("F:/PhD/Sensitivity meta analysis/Quintana-Ascencio et al 2018/Balds_for_simulation_o1.csv", header=T) ####
+
 names(site_info)
 
 
@@ -511,11 +529,12 @@ names(Pedro_list) <- new_list_name
 Pedro_list <- lapply(Pedro_list, as.data.frame)
 
 ## export as xlsx to add meta data
-writexl::write_xlsx(Pedro_list, path = file.path("processed data/Pedro's list.xlsx"), col_names = FALSE)
+writexl::write_xlsx(Pedro_list, path = file.path("processed data/00_fix data in different formats/Quintana-Ascencio et al 2018 Hypericum cumulicola.xlsx"), col_names = FALSE)
 
 ```
 
-## 2.4 Add coordinates (waiting for raw data)
+## 2.4 Add coordinates (waiting for meta data from Pedro)
+
 
 
 
