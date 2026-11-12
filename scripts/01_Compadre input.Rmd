@@ -5,6 +5,7 @@ rm(list = ls())
 
 library(Rcompadre)
 library(dplyr)
+library(openxlsx)
 ```
 #### 0.1 Warnings
 ```{r}
@@ -34,8 +35,16 @@ unique_compadre_mp <- compadre_mp[
 unique_compadre_mp_df <- as.data.frame(unique_compadre_mp)
 subset_df <- unique_compadre_mp_df[, c("Authors", "Journal", "YearPublication", "DOI_ISBN")]
 
+# subset_df[c("Link to Compadre", "Spatial replicates", "Multiple populations per species", "Hidden treatments", "Note")] <- NA
+
 ## Export
-write.csv(subset_df, file = "processed data/01_Compadre matrices/unique_compadre_mp.csv", row.names = FALSE)
+
+write.xlsx(
+  subset_df,
+  file = "processed data/01_Compadre matrices/unique_compadre_mp_1.xlsx",
+  rowNames = FALSE,
+  overwrite = TRUE
+)   ### Export as xlsx to preserve special characters in author names.
 
 
 ####################################### Deprecated ###################
@@ -70,7 +79,7 @@ write.csv(subset_df, file = "processed data/01_Compadre matrices/unique_compadre
 # }
 ```
 
-#### 1.1 Sarah's code (deprecated?)
+#### 1.X Sarah's code (deprecated?)
 ```{r}
 ##########################################################################################
 #################################### Sarah's Code ########################################
@@ -196,12 +205,6 @@ for (i in 1:nrow(unique_compadre_mp_df)) {
 
 ```
 
-###### 2.1.2 Average across years
-```{r}
-
-```
-
-
 #### 2.2.1 Extra info for each matrix
 ```{r}
 ## 
@@ -260,15 +263,17 @@ for (i in 1:nrow(unique_compadre_mp_df)) {
   
 }
 
-### export this list as excel
-writexl::write_xlsx(Info_list, path = file.path("F:/PhD/Sensitivity meta analysis/Compadre matrix meta data examples/Meta data for queried studies.xlsx"), col_names = TRUE)
-
+# ### export this list as excel
+# writexl::write_xlsx(Info_list, path = file.path("processed data/01_Compadre matrices/Check for spatial replicates.xlsx"), col_names = TRUE)
+# 
 
 ```
+ 
 
-###### 2.2.2 Visual checks of coords
+
+#### 2.3 Filter for studies with replicates
 ```{r}
-### Filter for studies that have populations sharing the same coordinates
+### Filter for studies that have spatially distinct populations
 
 single_location <- character()
 
@@ -290,14 +295,60 @@ for (i in 1:length(Info_list)) {
     }
   }
 }
+Info_list_2 <- Info_list[-which(names(Info_list) %in% single_location)]
 
+### Keep studies with more than one populations per species
+One_population_per_spp <- character()
+
+for (k in 1:length(Info_list_2)) {
+  num_species <- unique(Info_list_2[[k]]$SpeciesAuthor)
+  num_populations <- unique(Info_list_2[[k]]$Population)
+  
+  if (length(num_populations) == length(num_species)){
+    One_population_per_spp <- c(One_population_per_spp,names(Info_list_2)[k])
+  }
+}
+#### Final info list
+Info_list_study_with_replicates <- if (length(One_population_per_spp) == 0) {
+  Info_list_2
+} else {
+  Info_list_2[-which(names(Info_list_2) %in% One_population_per_spp)]
+}
+
+### Create new columns
+for (y in 1:length(Info_list_study_with_replicates)) {
+  cols <- c("Hidden treatment", "Note")
+  Info_list_study_with_replicates[[y]][cols]<- NA
+}
+
+### Export 
+##### Rename the duplicates
+names(Info_list_study_with_replicates)[which(names(Info_list_study_with_replicates) == "Nantel & Gagnon, 1999")][1] <- "Nantel & Gagnon, 1999a"
+names(Info_list_study_with_replicates)[which(names(Info_list_study_with_replicates) == "Nantel & Gagnon, 1999")][2] <- "Nantel & Gagnon, 1999b"
+
+# Maximum sheet name is 
+write.xlsx(
+  Info_list_study_with_replicates,
+  file = "processed data/01_Compadre matrices/Check for hidden treatmets.xlsx",
+  rowNames = FALSE,
+  overwrite = TRUE
+)
 ```
 Many studies contained no spatial replications: 1) one species, populations share the same coordinates, or 2) multiple species, each species containing populations that share the same coordinates, namely, num(species)>=num(spatially distinct populations).
 
 
+#### 2.4 Manual checks on matrix metadata for each study
+```{r}
+Info_i <- Info_list[[4]]
+Info_i
+```
+
+### 2.5 Element-wise averaging
 
 
-#### 2.3 Thomas' codes (Deprecated?)
+
+
+#### 2.X Thomas' codes (Deprecated?)
 ```{r}
 ## Check initial screening result
 # screening_res <- readxl::read_xlsx("processed data/03_initial screening results.xlsx")
