@@ -16,9 +16,9 @@ rm(list=ls(all=TRUE))
 
 
 
-Euler et al., 2014 sent raw data and codes in .txt. Need to construct matrices from raw data.
+Johan (Euler et al., 2014) sent us raw data and codes in .txt. Need to construct matrices from raw data.
 
-# 1. Euler et al., 2014
+# 1. Johan's study
 
 It seems that code versions a vs b represent scenarios of seed predation vs no seed predation. We want to use the scenario with seed predation (version b) since this was the "realized" field measured conditions. 
 
@@ -27,7 +27,7 @@ as.real() in R has been deprecated, replace it with Re(). This code fixes it in 
 
 ```{r}
 ##  
-file_paths <- list.files(path = "Raw data/data in different format/Euler et al 2014", 
+file_paths <- list.files(path = "Raw data/00_fix data in different formats/Johan's study/Euler et al 2014", 
                          pattern = "12b\\.txt$", 
                          full.names = TRUE) 
 
@@ -47,7 +47,7 @@ for (i in 1:length(file_paths)) {
 
 ## 1.2 since each code file contains three years (three matrices), separate each code into three for later processing.
 ```{r}
-output_dir <- "processed data/Euler et al., 2014_modified"
+output_dir <- "processed data/00_fix data in different formats/Johan's study/Modified_codes"
 unlink(list.files(output_dir, full.names = TRUE), recursive = TRUE) ## empty the output dir first before entering the loop
 
 
@@ -100,7 +100,7 @@ for (file in file_paths) {
 
 ## At the end, each original code file (n=24) should be parsed into three (n=72).
 if (length(list.files(output_dir)) == 72) { message ("All 24 code files were successfully parsed") 
-  } else { warning("something went wrong")} 
+  } else { stop("something went wrong")} 
 
 ```
 

@@ -1,0 +1,438 @@
+#troc 2008
+
+#clear workspace
+rm(list=ls(all=TRUE))
+
+
+#########
+#FUNCTIONS FOR VITAL RATES
+#########
+
+
+###### Probability of survival
+sx<-function(x,params) {
+	u<-exp(params[1]+params[2]*x)
+return(u/(1+u)) 
+}
+
+###### Growth function
+gyx<-function(y,x,params) {
+dnorm(y,mean=params[3]+params[4]*x,sd=params[5]) 
+}
+
+pyx=function(y,x,params) {sx(x,params)*gyx(y,x,params)}
+
+
+###### Fertility function, expected number of seeds produced by a size x ind 
+fx<-function(x,params) {
+	#probability of flowering (log reg):
+	u<-exp(params[6]+params[7]*x)
+	return(u/(1+u)*params[8])
+}
+
+###### Reproduction function DIRECTLY GERMINATING SEEDS
+fyx1<-function(x,params) {fx(x, params)*params[19] }
+
+
+###### Reproduction function to SEED BANK
+fyx2<-function(x,params) {fx(x, params)*params[20] }
+
+
+###### Probability of seedling survival and size distribution
+seedl2yr<-function(y,params) {
+	return(params[18]*dnorm(y,params[13],params[14])/(1-pnorm(0,params[13],params[14])))
+	}
+
+##---------------------------------------------------------------------------------
+
+# minimum and maximum sizes (0.9*min & 1.1*max size from data)
+min.size= 0.9; max.size= 158.4 
+
+###########################
+###### parameter vector
+
+p.vec<-rep(0,22)
+
+###############MAKE REGRESSIONS TO GET THE CORRECT VALUES################## 
+
+p.vec[1:2]<- c(0.69221,0.04431) 	#Survival intercept and slope
+
+p.vec[3:4]<- c(6.4302,0.7486)   	#Growth intercept and slope
+p.vec[5]<- 9.437   		        #Growth sd
+
+p.vec[6:7]<- c(-2.38170,0.03667) 	#Flowering 
+
+p.vec[8]<- 147.0588                     #seeds
+
+###########################################################################
+
+
+p.vec[13]<- 30.5641   		 	#mean seedling size
+p.vec[14]<- 14.12872		  	#sd(seedling size)						
+
+
+
+p.vec[18]<- 0.7567568 			#p of surviving the above-ground seedling stage (pool) 
+
+p.vec[19]<- 0.0078                      #p of directly germinating seeds
+p.vec[20]<- 0.59532                     #p of seeds going to the seed bank
+p.vec[21]<- 0.60                        #p of surviving seeds in the seed bank
+p.vec[22]<- 0.0078                      #p of germinating from seed bank
+#--------------------------------------------------------------------------------------
+
+
+
+###CREATE A MATRIX TO APPROXIMATE THE CONTINUOUS MODEL##################
+
+#Choose number of "classes", i.e points for midpoint rule approximation  
+n.size = 100 
+
+######################################################
+
+L= min.size; U= max.size; n <- n.size 
+b = L+c(0:n)*(U-L)/n
+y = 0.5*(b[1:n]+b[2:(n+1)])
+h = y[2]-y[1]
+
+
+G<-array(0,dim=c(n.size,n.size)) 
+G<-h*outer(y,y,gyx,params=p.vec)	     
+
+for(i in 1:(n.size/2)) G[1,i]<-G[1,i]+1-sum(G[,i])
+for(i in (n.size/2+1):n.size) G[n.size,i]<-G[n.size,i]+1-sum(G[,i])
+
+S<-sx(y,p.vec) 
+
+P<-S*G
+
+F<-fx(y,p.vec)
+
+K<-array(0,dim=c(2+n.size,2+n.size)) 
+	 K[2,3:(n.size+2)]<-h*fyx1(y,params=p.vec) #directly germinating seeds, from "anywhere"/flowering to seedlings, h here because going from continuous kernel to discrete seedling class  ##JD: so then h is not needed when "going back"..
+   K[1,3:(n.size+2)]<-h*fyx2(y,params=p.vec) #seeds going to the seedbank, from "anywhere"/flowering to seedbank, h here because going from continuous kernel to discrete seed class
+   K[1,1]<-p.vec[21] #probability of staying in the seedbank, i.e. survival in the seed bank
+   K[2,1]<-p.vec[22] #germination from seed bank
+	 K[3:(n.size+2),2]<-seedl2yr(y,p.vec) # seedlings going to 1st yr juveniles, from seedlings to "anywhere"
+ 	 K[3:(n.size+2),3:(n.size+2)]<-P #survival-growth of all non-seedlings (i.e. juveniles and adults)
+	
+
+
+
+#####Get lambda analytically#############
+  
+###from phyteuma
+
+A<-K
+
+
+lam<-Re(eigen(A)$values[1])
+
+##get lambda,v,w
+lam<-Re(eigen(A)$values[1])
+lambda<-lam
+w.eigen<-Re(eigen(A)$vectors[,1])
+stable.dist<-w.eigen/sum(w.eigen)
+v.eigen<-Re(eigen(t(A))$vectors[,1])
+repro.val<-v.eigen/v.eigen[1]
+
+
+
+lambda
+
+
+
+
+#--------------------------------------------------------------------------------------
+
+
+#troc 2009
+
+#clear workspace
+rm(list=ls(all=TRUE))
+
+
+#########
+#FUNCTIONS FOR VITAL RATES
+#########
+
+
+###### Probability of survival
+sx<-function(x,params) {
+	u<-exp(params[1]+params[2]*x)
+return(u/(1+u)) 
+}
+
+###### Growth function
+gyx<-function(y,x,params) {
+dnorm(y,mean=params[3]+params[4]*x,sd=params[5]) 
+}
+
+pyx=function(y,x,params) {sx(x,params)*gyx(y,x,params)}
+
+
+
+
+###### Fertility function, expected number of seeds produced by a size x ind 
+fx<-function(x,params) {
+	#probability of flowering (log reg):
+	u<-exp(params[6]+params[7]*x)
+	return(u/(1+u)*params[8])
+}
+
+
+###### Reproduction function DIRECTLY GERMINATING SEEDS
+fyx1<-function(x,params) {fx(x, params)*params[19] }
+
+
+###### Reproduction function to SEED BANK
+fyx2<-function(x,params) {fx(x, params)*params[20] }
+
+
+###### Probability of seedling survival and size distribution
+seedl2yr<-function(y,params) {
+	return(params[18]*dnorm(y,params[13],params[14])/(1-pnorm(0,params[13],params[14])))
+	}
+
+##---------------------------------------------------------------------------------
+
+# minimum and maximum sizes (0.9*min & 1.1*max size from data)
+min.size= 0.9; max.size= 158.4 
+
+###########################
+###### parameter vector
+
+p.vec<-rep(0,22)
+
+###############MAKE REGRESSIONS TO GET THE CORRECT VALUES################## 
+
+p.vec[1:2]<- c(0.02715,0.03356)   	#Survival intercept and slope
+
+p.vec[3:4]<- c(7.02320,0.78653)   	#Growth intercept and slope
+p.vec[5]<- 11.07 		        #Growth sd
+
+p.vec[6:7]<- c(-3.28276,0.07837)   	#Flowering 
+
+p.vec[8]<- 212.1951                     #seeds
+
+###########################################################################
+
+
+p.vec[13]<- 30.33333   		 	#mean seedling size
+p.vec[14]<- 17.72631		  	#sd(seedling size)						
+
+
+
+p.vec[18]<- 0.75   			#p of surviving the above-ground seedling stage 
+
+p.vec[19]<- 0.001379                    #p of directly germinating seeds
+p.vec[20]<- 0.599172                    #p of seeds going to the seed bank
+p.vec[21]<- 0.60                        #p of surviving seeds in the seed bank
+p.vec[22]<- 0.001379                    #p of germinating from seed bank
+#--------------------------------------------------------------------------------------
+
+
+
+###CREATE A MATRIX TO APPROXIMATE THE CONTINUOUS MODEL##################
+
+#Choose number of "classes", i.e points for midpoint rule approximation  
+n.size = 100 
+
+######################################################
+
+L= min.size; U= max.size; n <- n.size 
+b = L+c(0:n)*(U-L)/n
+y = 0.5*(b[1:n]+b[2:(n+1)])
+h = y[2]-y[1]
+
+
+G<-array(0,dim=c(n.size,n.size)) 
+G<-h*outer(y,y,gyx,params=p.vec)	     
+
+for(i in 1:(n.size/2)) G[1,i]<-G[1,i]+1-sum(G[,i])
+for(i in (n.size/2+1):n.size) G[n.size,i]<-G[n.size,i]+1-sum(G[,i])
+
+S<-sx(y,p.vec) 
+
+P<-S*G
+
+F<-fx(y,p.vec)
+
+K<-array(0,dim=c(2+n.size,2+n.size)) 
+	 K[2,3:(n.size+2)]<-h*fyx1(y,params=p.vec) #directly germinating seeds, from "anywhere"/flowering to seedlings, h here because going from continuous kernel to discrete seedling class  ##JD: so then h is not needed when "going back"..
+   K[1,3:(n.size+2)]<-h*fyx2(y,params=p.vec) #seeds going to the seedbank, from "anywhere"/flowering to seedbank, h here because going from continuous kernel to discrete seed class
+   K[1,1]<-p.vec[21] #probability of staying in the seedbank, i.e. survival in the seed bank
+   K[2,1]<-p.vec[22] #germination from seed bank
+	 K[3:(n.size+2),2]<-seedl2yr(y,p.vec) # seedlings going to 1st yr juveniles, from seedlings to "anywhere"
+ 	 K[3:(n.size+2),3:(n.size+2)]<-P #survival-growth of all non-seedlings (i.e. juveniles and adults)
+	
+
+
+
+#####Get lambda analytically#############
+  
+###from phyteuma
+
+A<-K
+
+
+lam<-Re(eigen(A)$values[1])
+
+##get lambda,v,w
+lam<-Re(eigen(A)$values[1])
+lambda<-lam
+w.eigen<-Re(eigen(A)$vectors[,1])
+stable.dist<-w.eigen/sum(w.eigen)
+v.eigen<-Re(eigen(t(A))$vectors[,1])
+repro.val<-v.eigen/v.eigen[1]
+
+
+
+lambda
+
+#------------------------------------------------------------------------------------------------
+
+
+#troc 2010
+
+#clear workspace
+rm(list=ls(all=TRUE))
+
+
+#########
+#FUNCTIONS FOR VITAL RATES
+#########
+
+
+###### Probability of survival
+sx<-function(x,params) {
+	u<-exp(params[1]+params[2]*x)
+return(u/(1+u)) 
+}
+
+###### Growth function
+gyx<-function(y,x,params) {
+dnorm(y,mean=params[3]+params[4]*x,sd=params[5]) 
+}
+
+pyx=function(y,x,params) {sx(x,params)*gyx(y,x,params)}
+
+
+###### Fertility function, expected number of seeds produced by a size x ind 
+fx<-function(x,params) {
+	#probability of flowering (log reg):
+	u<-exp(params[6]+params[7]*x)
+	return(u/(1+u)*params[8])
+}
+
+
+###### Reproduction function DIRECTLY GERMINATING SEEDS
+fyx1<-function(x,params) {fx(x, params)*params[19] }
+
+
+###### Reproduction function to SEED BANK
+fyx2<-function(x,params) {fx(x, params)*params[20] }
+
+
+###### Probability of seedling survival and size distribution
+seedl2yr<-function(y,params) {
+	return(params[18]*dnorm(y,params[13],params[14])/(1-pnorm(0,params[13],params[14])))
+	}
+
+##---------------------------------------------------------------------------------
+
+# minimum and maximum sizes (0.9*min & 1.1*max size from data)
+min.size= 0.9; max.size= 158.4 
+
+###########################
+###### parameter vector
+
+p.vec<-rep(0,22)
+
+###############MAKE REGRESSIONS TO GET THE CORRECT VALUES################## 
+
+p.vec[1:2]<- c(0.37855,0.02744) 	#Survival intercept and slope
+
+p.vec[3:4]<- c(16.00016,0.54735)   	#Growth intercept and slope
+p.vec[5]<- 9.906 		        #Growth sd
+
+p.vec[6:7]<- c(-2.93012,0.06817) 	#Flowering 
+
+p.vec[8]<- 207.6923                     #seeds
+
+###########################################################################
+
+
+p.vec[13]<- 34.78947  		 	#mean seedling size
+p.vec[14]<- 18.10664		  	#sd(seedling size)						
+
+
+
+p.vec[18]<- 0.753378  			#p of surviving the above-ground seedling stage 
+
+p.vec[19]<- 0.002346                    #p of directly germinating seeds
+p.vec[20]<- 0.598593                    #p of seeds going to the seed bank
+p.vec[21]<- 0.60                        #p of surviving seeds in the seed bank
+p.vec[22]<- 0.002346                    #p of germinating from seed bank
+#--------------------------------------------------------------------------------------
+
+
+
+###CREATE A MATRIX TO APPROXIMATE THE CONTINUOUS MODEL##################
+
+#Choose number of "classes", i.e points for midpoint rule approximation  
+n.size = 100 
+
+######################################################
+
+L= min.size; U= max.size; n <- n.size 
+b = L+c(0:n)*(U-L)/n
+y = 0.5*(b[1:n]+b[2:(n+1)])
+h = y[2]-y[1]
+
+
+G<-array(0,dim=c(n.size,n.size)) 
+G<-h*outer(y,y,gyx,params=p.vec)	     
+
+for(i in 1:(n.size/2)) G[1,i]<-G[1,i]+1-sum(G[,i])
+for(i in (n.size/2+1):n.size) G[n.size,i]<-G[n.size,i]+1-sum(G[,i])
+
+S<-sx(y,p.vec) 
+
+P<-S*G
+
+F<-fx(y,p.vec)
+
+K<-array(0,dim=c(2+n.size,2+n.size)) 
+	 K[2,3:(n.size+2)]<-h*fyx1(y,params=p.vec) #directly germinating seeds, from "anywhere"/flowering to seedlings, h here because going from continuous kernel to discrete seedling class  ##JD: so then h is not needed when "going back"..
+   K[1,3:(n.size+2)]<-h*fyx2(y,params=p.vec) #seeds going to the seedbank, from "anywhere"/flowering to seedbank, h here because going from continuous kernel to discrete seed class
+   K[1,1]<-p.vec[21] #probability of staying in the seedbank, i.e. survival in the seed bank
+   K[2,1]<-p.vec[22] #germination from seed bank
+	 K[3:(n.size+2),2]<-seedl2yr(y,p.vec) # seedlings going to 1st yr juveniles, from seedlings to "anywhere"
+ 	 K[3:(n.size+2),3:(n.size+2)]<-P #survival-growth of all non-seedlings (i.e. juveniles and adults)
+	
+
+
+
+#####Get lambda analytically#############
+  
+###from phyteuma
+
+A<-K
+
+
+lam<-Re(eigen(A)$values[1])
+
+##get lambda,v,w
+lam<-Re(eigen(A)$values[1])
+lambda<-lam
+w.eigen<-Re(eigen(A)$vectors[,1])
+stable.dist<-w.eigen/sum(w.eigen)
+v.eigen<-Re(eigen(t(A))$vectors[,1])
+repro.val<-v.eigen/v.eigen[1]
+
+
+
+lambda
+
+
+
