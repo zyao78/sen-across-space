@@ -38,13 +38,13 @@ subset_df <- unique_compadre_mp_df[, c("Authors", "Journal", "YearPublication", 
 # subset_df[c("Link to Compadre", "Spatial replicates", "Multiple populations per species", "Hidden treatments", "Note")] <- NA
 
 ## Export
-
-write.xlsx(
-  subset_df,
-  file = "processed data/01_Compadre matrices/unique_compadre_mp_1.xlsx",
-  rowNames = FALSE,
-  overwrite = TRUE
-)   ### Export as xlsx to preserve special characters in author names.
+# 
+# write.xlsx(
+#   subset_df,
+#   file = "processed data/01_Compadre matrices/unique_compadre_mp_1.xlsx",
+#   rowNames = FALSE,
+#   overwrite = TRUE
+# )   ### Export as xlsx to preserve special characters in author names.
 
 
 ####################################### Deprecated ###################
@@ -317,7 +317,7 @@ Info_list_study_with_replicates <- if (length(One_population_per_spp) == 0) {
 
 ### Create new columns
 for (y in 1:length(Info_list_study_with_replicates)) {
-  cols <- c("Hidden treatment", "Note")
+  cols <- c("Hidden treatment", "Replicates despite treatment?","Note")
   Info_list_study_with_replicates[[y]][cols]<- NA
 }
 
@@ -326,13 +326,17 @@ for (y in 1:length(Info_list_study_with_replicates)) {
 names(Info_list_study_with_replicates)[which(names(Info_list_study_with_replicates) == "Nantel & Gagnon, 1999")][1] <- "Nantel & Gagnon, 1999a"
 names(Info_list_study_with_replicates)[which(names(Info_list_study_with_replicates) == "Nantel & Gagnon, 1999")][2] <- "Nantel & Gagnon, 1999b"
 
+
 # Maximum sheet name is 
-write.xlsx(
-  Info_list_study_with_replicates,
-  file = "processed data/01_Compadre matrices/Check for hidden treatmets.xlsx",
-  rowNames = FALSE,
-  overwrite = TRUE
-)
+writexl::write_xlsx(Info_list_study_with_replicates, path = file.path("processed data/01_Compadre matrices/Check for hidden treatmets.xlsx"), col_names = TRUE)
+
+# 
+# write.xlsx(
+#   Info_list_study_with_replicates,
+#   file = "processed data/01_Compadre matrices/Check for hidden treatmets.xlsx",
+#   rowNames = FALSE,
+#   overwrite = TRUE
+# )
 ```
 Many studies contained no spatial replications: 1) one species, populations share the same coordinates, or 2) multiple species, each species containing populations that share the same coordinates, namely, num(species)>=num(spatially distinct populations).
 
@@ -344,6 +348,15 @@ Info_i
 ```
 
 ### 2.5 Element-wise averaging
+##### 2.5.1 Warning
+```{r}
+warning("some matrices were entered twice (for example, Weppler et al. (2006). Need to delete duplicates before attempting to average")
+warning("The two Nantel studies are from one study, should be combined into one???")
+warning("In some studies, the same species (AutherSpecies) are called differently: Hydrastis_canadensis_2 vs Hydrastis_canadensis")
+```
+
+##### 2.5.2 Fix duplicated matrix
+##### 2.5.3 Fix different names for the same species
 
 
 
